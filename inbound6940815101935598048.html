@@ -1,0 +1,2281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CitySavings — FSA LOAN RANGER TABLET 2.1.0</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    *{box-sizing:border-box;font-family:Arial,sans-serif;}
+    body{background:#e8f0f8;padding:12px; font-size:13px; margin:0;}
+
+    /* === LOGIN SCREEN === */
+    #loginScreen{position:fixed;inset:0;background:linear-gradient(135deg,#5E35B1,#7E57C2);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;}
+    .login-box{background:#fff;padding:30px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.25);width:100%;max-width:400px;}
+    .login-title{text-align:center;color:#5E35B1;font-size:22px;font-weight:bold;margin-bottom:5px;}
+    .login-subtitle{text-align:center;color:#666;margin-bottom:20px;font-size:13px;}
+    .login-input{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:8px;font-size:14px;}
+    .login-input:focus{outline:none;border-color:#5E35B1;box-shadow:0 0 0 3px rgba(94,53,177,0.1);}
+    .login-btn{width:100%;padding:12px;background:#5E35B1;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;margin-top:10px;transition:.2s;}
+    .login-btn:hover{background:#4527A0;}
+    .login-btn.secondary{background:#FF9800;margin-top:8px;}
+    .login-btn.secondary:hover{background:#F57C00;}
+    .login-error{color:#E53935;margin-top:12px;text-align:center;display:none;font-size:13px;font-weight:bold;}
+    .add-user-toggle{text-align:center;margin-top:15px;}
+    .add-user-toggle a{color:#5E35B1;cursor:pointer;text-decoration:underline;font-size:13px;}
+    .add-user-section{margin-top:18px;padding-top:15px;border-top:1px dashed #ddd;display:none;}
+    .add-user-section h4{color:#5E35B1;margin:0 0 10px 0;text-align:center;}
+    .system-container{display:none;}
+
+    /* === MAIN SYSTEM STYLES === */
+    .container{background:#fff;max-width:1340px;margin:0 auto;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;}
+    .hdr{background:#5E35B1;color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+    .logo{font-size:18px;font-weight:900;color:#FF9E00;}
+    .logo-sub{font-size:10px;color:#fff;opacity:.9;text-transform:uppercase;}
+    .hdr-title{font-size:15px;font-weight:600;}
+    .hdr-user{font-size:14px;color:#FFE082;display:flex;align-items:center;gap:10px;}
+    .hdr-user .user-name{font-weight:bold;}
+    .btn-logout{background:#E53935;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;}
+    .btn-logout:hover{background:#C62828;}
+    .btns{display:flex;gap:8px;padding:10px 20px;border-bottom:1px solid #ddd;flex-wrap:wrap;justify-content:flex-end;}
+    .btn{padding:8px 14px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:.2s;}
+    .btn:hover{opacity:.9;transform:scale(1.02);}
+    .btn-new{background:#5E35B1;color:#fff;}
+    .btn-save{background:#2196F3;color:#fff;}
+    .btn-excel{background:#009688;color:#fff;}
+    .btn-import{background:#795548;color:#fff;}
+    .btn-print{background:#FF9800;color:#fff;}
+    .btn-email{background:#9C27B0;color:#fff;}
+    .btn-edit{background:#FF9800;color:#fff;}
+    .btn-del{background:#E53935;color:#fff;}
+    .btn-clearlog{background:#E53935;color:#fff;}
+    .wrap{display:flex;flex-wrap:wrap;}
+    .side{width:190px;background:#f5f5f5;border-right:1px solid #ccc;}
+    .menu{padding:12px 15px;font-size:12px;font-weight:bold;border-bottom:1px solid #ddd;cursor:pointer;color:#444;}
+    .menu.active{background:#5E35B1;color:#fff;}
+    .menu:hover:not(.active){background:#e0e0e0;}
+    .content{flex:1;min-width:320px;padding:15px 20px;}
+    .sec{background:#7E57C2;color:#fff;padding:8px 12px;font-size:13px;font-weight:bold;text-align:center;margin:12px 0 8px;border-radius:4px;letter-spacing:0.5px;}
+    .row{display:flex;align-items:center;padding:5px 0;gap:8px;flex-wrap:wrap;position:relative;}
+    .row label{width:220px;font-size:12px;font-weight:bold;color:#333;text-align:right;}
+    .row input,.row select{flex:1;min-width:160px;padding:8px 10px;font-size:13px;border:1px solid #ccc;border-radius:4px;}
+    .checkbox-row{display:flex;align-items:center;gap:12px;padding:8px 0;flex-wrap:wrap;margin:5px 0;}
+    .checkbox-item{display:flex;align-items:center;gap:5px;cursor:pointer;padding:6px 10px;border-radius:6px;background:#f8f9fa;border:1px solid #ddd;}
+    .checkbox-item:hover{background:#f3e5f5;border-color:#5E35B1;}
+    .checkbox-item input{width:16px;height:16px;cursor:pointer;}
+    .checkbox-item label{font-size:12px;font-weight:bold;cursor:pointer;margin:0;}
+    .amt-input{font-size:14px !important;font-weight:bold;text-align:right;}
+    .rd{background:#FCE4EC;border-color:#E53935;color:#C62828;font-weight:bold;}
+    .gr{background:#E8F5E9;border-color:#4CAF50;color:#2E7D32;font-weight:bold;}
+    .yl{background:#FFF9C4;border-color:#FBC02D;}
+    
+    /* JSON AUTO SEARCH LISTVIEW OVERLAY */
+    .search-results-overlay{position:absolute;top:100%;left:228px;right:0;background:#fff;border:2px solid #5E35B1;border-radius:0 0 8px 8px;max-height:220px;overflow-y:auto;z-index:999;box-shadow:0 6px 18px rgba(0,0,0,0.2);display:none;}
+    .search-item-row{padding:8px 12px;border-bottom:1px solid #eee;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+    .search-item-row:hover{background:#f3e5f5;}
+    .search-item-name{font-weight:bold;color:#5E35B1;}
+    .search-item-sub{font-size:11px;color:#666;}
+
+    /* Buyout Section */
+    .buyout-wrap{background:#f9f9fb;border:1px solid #e0e0e0;border-radius:8px;padding:12px;margin:12px 0;}
+    .buyout-table{width:100%;border-collapse:collapse;margin-top:8px;}
+    .buyout-table th,.buyout-table td{padding:8px;border-bottom:1px solid #eee;text-align:left;}
+    .buyout-table th{background:#f0f0f0;font-weight:bold;font-size:12px;}
+    .buyout-input{width:100%;border:1px solid #ddd;padding:6px 8px;border-radius:4px;font-size:12px;}
+    .buyout-input.balance,.buyout-input.ded{text-align:right;}
+    .buyout-total{font-weight:bold;background:#f7f7f9;}
+    .btn-buyout{background:#5E35B1;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;margin-top:8px;font-size:12px;font-weight:bold;}
+    .btn-remove{background:#d32f2f;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;}
+    
+    /* Sections */
+    #dashboardSection,#loanSection,#reportsSection,#recordsSection,#activityLogSection,#reloanQualifierSection,#databaseSection,#emailSection{display:none;}
+    
+    /* Executive Dashboard Styles */
+    .dash-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:18px;}
+    .dash-kpi-card{background:#fff;border-radius:10px;padding:15px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border-left:5px solid #5E35B1;position:relative;overflow:hidden;}
+    .dash-kpi-card.purple{border-left-color:#5E35B1;}
+    .dash-kpi-card.green{border-left-color:#4CAF50;}
+    .dash-kpi-card.orange{border-left-color:#FF9800;}
+    .dash-kpi-card.blue{border-left-color:#2196F3;}
+    .dash-kpi-card.red{border-left-color:#E53935;}
+    .dash-kpi-title{font-size:11px;font-weight:bold;color:#777;text-transform:uppercase;margin-bottom:5px;}
+    .dash-kpi-val{font-size:20px;font-weight:900;color:#222;}
+    .dash-kpi-sub{font-size:11px;color:#888;margin-top:4px;}
+    
+    .dash-flex-row{display:flex;gap:15px;flex-wrap:wrap;margin-bottom:18px;}
+    .dash-card{background:#fff;border-radius:10px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);flex:1;min-width:300px;border:1px solid #e2e8f0;}
+    .dash-card-hdr{font-size:14px;font-weight:bold;color:#5E35B1;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f0f0f0;padding-bottom:8px;}
+    
+    .bar-group{margin-bottom:10px;}
+    .bar-lbl{display:flex;justify-content:space-between;font-size:11px;font-weight:bold;margin-bottom:3px;color:#444;}
+    .bar-bg{height:8px;background:#eee;border-radius:4px;overflow:hidden;}
+    .bar-fill{height:100%;background:#5E35B1;border-radius:4px;transition:width 0.5s;}
+
+    /* Table Styles */
+    .record-table,.report-table{width:100%;border-collapse:collapse;font-size:12px;}
+    .record-table th,.record-table td,.report-table th,.report-table td{padding:8px 10px;text-align:left;border-bottom:1px solid #eee;}
+    .record-table th,.report-table th{background:#5E35B1;color:#fff;font-size:11px;font-weight:bold;}
+    .record-table tr:hover,.report-table tr:hover{background:#f8f5fc;}
+    .badge-loan{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;}
+    .badge-new{background:#E3F2FD;color:#0D47A1;}
+    .badge-reloan{background:#E8F5E9;color:#1B5E20;}
+    .badge-mult{background:#FFF3E0;color:#E65100;}
+    
+    /* Status Pills */
+    .status-pill{display:inline-block;padding:2px 6px;border-radius:4px;font-weight:bold;font-size:10px;}
+    .pill-compute{background:#EDE7F6;color:#4527A0;}
+    .pill-process{background:#E3F2FD;color:#1565C0;}
+    .pill-email{background:#F3E5F5;color:#6A1B9A;}
+    .pill-verified{background:#FFF8E1;color:#F57F17;}
+    .pill-disburse{background:#E8F5E9;color:#2E7D32;}
+    .pill-untag{background:#ECEFF1;color:#37474F;}
+    .pill-lost{background:#FFEBEE;color:#C62828;}
+
+    /* Reloan Result Box */
+    .reloan-result{margin-top:15px; padding:15px; border-radius:8px; font-size:14px; text-align:left; font-weight:normal; display:none; line-height:1.5;}
+    .reloan-pass{background:#E8F5E9; color:#1B5E20; border:2px solid #4CAF50;}
+    .reloan-fail{background:#FFEBEE; color:#B71C1C; border:2px solid #E53935;}
+    .reloan-highlight{font-size:18px; font-weight:bold; margin-top:5px; color:#2E7D32;}
+
+    /* System Status */
+    .status-box{padding:10px;border-radius:6px;margin:10px 0;display:none;font-weight:bold;font-size:13px;}
+    .status-success{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;display:block;}
+    .status-error{background:#FFEBEE;color:#C62828;border:1px solid #EF9A9A;display:block;}
+    
+    .footer{margin-top:30px;padding:15px 0;text-align:center;border-top:2px solid #5E35B1;background:#f9f9f9;}
+    .footer-name{font-size:13px;color:#333;font-weight:bold;}
+
+    /* Print Preview Overlay */
+    #printOverlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px;overflow:auto;}
+    #printOverlay.show{display:flex;}
+    .print-modal{background:#fff;padding:30px;max-width:8.5in;width:100%;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.3);position:relative;}
+    .print-close{position:absolute;top:10px;right:15px;font-size:24px;cursor:pointer;color:#666;}
+    .print-table{width:100%;border-collapse:collapse;border:2px solid #000;}
+    .print-table td,.print-table th{border:1px solid #000;padding:8px 10px;vertical-align:middle;font-size:13px;}
+    .print-table th{background:transparent;font-weight:bold;text-align:center;font-size:15px;border:2px solid #000;}
+    .print-table .text-right{text-align:right;}
+    .print-signature{margin-top:40px;font-size:13px;line-height:2;}
+    @media print{*:visibility:hidden;#printOverlay,#printOverlay *{visibility:visible;}#printOverlay{position:absolute;left:0;top:0;width:100%;background:#fff;}.print-close{display:none;}}
+
+    /* === HTML EMAIL MODAL STYLES (EXACT COMPACT PURPLE HEADER & BOLD LETTERING DESIGN) === */
+    #emailModalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+    #emailModalOverlay.show{display:flex;}
+    .email-modal-box{background:#fff;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.3);width:100%;max-width:760px;overflow:hidden;border:1px solid #ccc;}
+    .email-modal-hdr{background:#5E35B1;color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;}
+    .email-modal-title{font-size:15px;font-weight:bold;}
+    .email-modal-close{cursor:pointer;font-size:20px;color:#fff;font-weight:bold;}
+    .email-modal-body{padding:18px; max-height:75vh; overflow-y:auto; background:#f4f5f7;}
+    .email-modal-ftr{background:#fff;padding:12px 18px;border-top:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+    
+    /* Exact Rendered HTML Email Card with Reduced Spacing */
+    .email-card-render{background:#fff; border:1px solid #b0b0b0; padding:0; font-family:Arial, sans-serif; color:#000; font-size:13px; line-height:1.35; max-width:680px; margin:0 auto; box-shadow:0 2px 10px rgba(0,0,0,0.08);}
+    .email-card-purple-header{background:#8E24AA; color:#ffffff; padding:10px 18px; font-size:22px; font-weight:bold; letter-spacing:0.3px;}
+    .email-card-inner-body{padding:18px 20px;}
+    .email-card-inner-body p{margin:0 0 10px 0; color:#000; line-height:1.35;}
+    .email-bold-item{font-weight:bold; margin:2px 0; display:block; font-size:13px; color:#000; line-height:1.3;}
+    .email-netpay-box{margin:12px 0; width:100%; max-width:280px;}
+    .email-netpay-title{font-weight:bold; text-transform:uppercase; margin-bottom:6px; font-size:13px; color:#000;}
+    .email-netpay-grid{display:grid; grid-template-columns:130px 1fr; gap:2px; font-size:13px; color:#000; line-height:1.25;}
+    .email-netpay-grid .lbl{font-weight:normal;}
+    .email-netpay-grid .val{text-align:right;}
+    .email-nthp-final-box{border-top:1px solid #000; border-bottom:3px double #000; padding:2px 6px; display:inline-block; font-weight:bold; margin-top:2px;}
+    .email-footer-note{color:#777; font-size:11px; margin-top:18px; line-height:1.35;}
+
+    @media(max-width:768px){.wrap{flex-direction:column;}.side{width:100%;display:flex;overflow-x:auto;}.menu{border-right:1px solid #ddd;border-bottom:none;white-space:nowrap;}.row label{width:100%;text-align:left;}.search-results-overlay{left:0;}}
+  </style>
+</head>
+<body>
+
+<!-- 🔐 LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-title">🏦 FSA LOAN RANGER</div>
+    <div class="login-subtitle">CitySavings — Loan Management System v2.1.0</div>
+    <input type="text" id="loginUsername" class="login-input" placeholder="Username" autocomplete="username">
+    <input type="password" id="loginPassword" class="login-input" placeholder="Password" autocomplete="current-password">
+    <div id="loginError" class="login-error"></div>
+    <button class="login-btn" onclick="doLogin()">🔑 LOGIN</button>
+    <div class="add-user-toggle">
+      <a onclick="toggleAddUser()">➕ Add New User (Admin Only)</a>
+    </div>
+    <div id="addUserSection" class="add-user-section">
+      <h4>Create New Officer User</h4>
+      <input type="text" id="adminUsername" class="login-input" placeholder="Admin Username">
+      <input type="password" id="adminPassword" class="login-input" placeholder="Admin Password">
+      <input type="text" id="newUsername" class="login-input" placeholder="New Officer Username">
+      <input type="password" id="newPassword" class="login-input" placeholder="New Password">
+      <div id="addUserError" class="login-error"></div>
+      <button class="login-btn secondary" onclick="addNewUser()">✅ CREATE USER</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN SYSTEM CONTAINER -->
+<div class="system-container" id="mainSystem">
+
+<!-- Print Overlay -->
+<div id="printOverlay">
+  <div class="print-modal">
+    <span class="print-close" onclick="closePrintPreview()">&times;</span>
+    <table class="print-table">
+      <tr><th colspan="4" style="font-size:18px; padding:12px;">CITY SAVINGS BANK - DAVAO BRANCH</th></tr>
+      <tr><td style="width:22%; font-weight:bold;">Borrower's Name:</td><td colspan="3" style="font-size:16px; font-weight:bold;" id="p_name">—</td></tr>
+      <tr><td style="font-weight:bold;">Employee No</td><td id="p_empNo">—</td><td style="font-weight:bold;">DATE</td><td id="p_date">—</td></tr>
+      <tr><td style="font-weight:bold;">School / Office</td><td id="p_school">—</td><td style="font-weight:bold;">Cellphone</td><td id="p_mobile">—</td></tr>
+      <tr><td style="font-weight:bold;">Loan Amount</td><td class="text-right" id="p_loanAmt">—</td><td style="font-weight:bold;">Term</td><td id="p_term">—</td></tr>
+      <tr><td style="font-weight:bold;">Division</td><td id="p_division">—</td><td style="font-weight:bold;">Station</td><td id="p_station">—</td></tr>
+      <tr><th colspan="3" style="text-align:center; font-size:14px;">NET TAKE HOME PAY COMPUTATION</th><th>Remarks</th></tr>
+      <tr><td colspan="2" style="font-weight:bold;">Latest NTHP</td><td class="text-right" id="p_netpay">—</td><td></td></tr>
+      <tr><td colspan="2" style="font-weight:bold;">Less: Undeducted PLI</td><td class="text-right" id="p_undeducted">—</td><td></td></tr>
+      <tr><td colspan="2" style="font-weight:bold;">Add: Old CSB Deduction</td><td class="text-right" id="p_oldDed">—</td><td></td></tr>
+      <tr><td colspan="2" style="font-weight:bold;">Add: Buyout Total Deduction</td><td class="text-right" id="p_buyout">—</td><td></td></tr>
+      <tr><td colspan="2" style="font-weight:bold;">Add: Add Back</td><td class="text-right" id="p_addBack">—</td><td></td></tr>
+      <tr style="border-top:2px solid #000;"><td colspan="2" style="font-weight:bold;">= TOTAL BASE</td><td class="text-right" id="p_total">—</td><td></td></tr>
+      <tr><td colspan="2" style="font-weight:bold;">Less: New CSB Amortization</td><td class="text-right" id="p_newDed">—</td><td></td></tr>
+      <tr style="border-top:2px solid #000;"><td colspan="2" style="font-weight:bold;">= ACTUAL NET PAY</td><td class="text-right" id="p_actualNet">—</td><td></td></tr>
+    </table>
+    <div class="print-signature">
+      <p>PROCESSED BY: <span id="p_processedBy">—</span></p>
+      <p>APPROVED BY: MANUEL ALBARAN</p>
+    </div>
+    <div style="text-align:center;margin-top:20px;">
+      <button style="padding:8px 20px;background:#4CAF50;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:bold;" onclick="window.print()">🖨️ PRINT NOW</button>
+    </div>
+  </div>
+</div>
+
+<!-- 📧 GENERATED HTML EMAIL TEMPLATE MODAL (REDUCED TIGHT SPACING MATCHING IMAGE) -->
+<div id="emailModalOverlay">
+  <div class="email-modal-box">
+    <div class="email-modal-hdr">
+      <span class="email-modal-title">📧 Formatted Email Template Preview</span>
+      <span class="email-modal-close" onclick="closeComposeModal()">&times;</span>
+    </div>
+    <div class="email-modal-body">
+      
+      <!-- Rendered HTML Card matching exact layout & reduced tight spacing -->
+      <div class="email-card-render" id="emailCardContent">
+        <!-- Purple Banner -->
+        <div class="email-card-purple-header">City Savings Bank</div>
+        
+        <div class="email-card-inner-body">
+          <p id="mSalutation" style="margin-bottom:12px;">Dear Miss SALIMBAGO</p>
+          <p style="margin-bottom:12px;">We have evaluated your loan application and attached your scanned payslip with the following information:</p>
+          
+          <!-- Items a-f tight vertical spacing -->
+          <div class="email-bold-item">a. Corporate name of the Lender and APDS Code for Lending: City Savings Bank - 0339</div>
+          <div class="email-bold-item">b. Principal amount of the loan:  <span id="mLoanAmt">150,000</span></div>
+          <div class="email-bold-item">c. Term of the loan (first and final months of deduction): <span id="mTermDates">84 (10/26/2026 / 09/26/2033</span></div>
+          <div class="email-bold-item">d. Amount of monthly amortization:  <span id="mAmort">2,463.91</span></div>
+          <div class="email-bold-item">e. Date of loan evaluation: <span id="mEvalDate">09/26/2026</span></div>
+          <div class="email-bold-item">f. Name signature of Lender's Loan Officer: <span id="mOfficer">EMMANUEL MERCADO</span></div>
+
+          <p style="margin-top:14px; margin-bottom:14px;"><strong>Loan Type: <span id="mLoanType">NEWLOAN</span></strong></p>
+          <p style="margin-bottom:14px;"><strong>REDEMPTION</strong></p>
+
+          <div class="email-netpay-box">
+            <div class="email-netpay-title">NETPAY COMPUTATION</div>
+            <div class="email-netpay-grid">
+              <span class="lbl">NTHP:</span><span class="val" id="mNthp">10,053.59</span>
+              <span class="lbl">Old Deduction:</span><span class="val" id="mOldDed">0.00</span>
+              <span class="lbl">Others:</span><span class="val" id="mOthers">0.0</span>
+              <span class="lbl">Other PLI Ded:</span><span class="val" id="mPliDed">0.00</span>
+              <span class="lbl" style="font-weight:bold;">Total NTHP:</span><span class="val" style="font-weight:bold;" id="mTotalNthp">10,053.59</span>
+              <span class="lbl">New Deduction:</span><span class="val" id="mNewDed">2,463.91</span>
+              <span class="lbl">On-Queue:</span><span class="val">0.00</span>
+              <span class="lbl" style="border-bottom:1px solid #000; padding-bottom:1px;">Incoming Ded:</span><span class="val" style="border-bottom:1px solid #000; padding-bottom:1px;">0.00</span>
+              <span class="lbl" style="padding-top:4px; font-weight:bold;">NTHP After Ded:</span>
+              <span class="val" style="padding-top:2px;"><span class="email-nthp-final-box" id="mActualNet">7,589.68</span></span>
+            </div>
+          </div>
+
+          <p style="margin-top:16px;">Please forward this email to your APDS verifier: <a href="mailto:verifier.r11.mcolipano@deped.gov.ph" style="color:#1565C0; font-weight:bold; text-decoration:underline;">verifier.r11.mcolipano@deped.gov.ph</a></p>
+
+          <p style="margin-top:10px;">Kindly copy furnish the following emails upon forwarding your Reloan Summary with the attached payslip to your assigned DepEd verifier: <a href="mailto:cps.lrmobile@citysavings.com.ph" style="color:#1565C0; font-weight:bold; text-decoration:underline;">cps.lrmobile@citysavings.com.ph</a> <a href="mailto:tsl.lrmobile@citysavings.com.ph" style="color:#1565C0; font-weight:bold; text-decoration:underline;">tsl.lrmobile@citysavings.com.ph</a></p>
+
+          <p style="margin-top:14px; margin-bottom:10px;">Thank you!</p>
+
+          <div class="email-footer-note">
+            The information contained in this email message is intended for use only by the individual or entity to which it is addressed, and such information may be privileged, confidential and/or proprietary, and protected under applicable laws.<br>
+            <strong>Note: This is a system generated email.</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="email-modal-ftr">
+      <div>
+        <button class="btn btn-save" style="padding:8px 16px; font-size:13px;" onclick="copyRichHtmlEmail()">📋 COPY RICH HTML FORM</button>
+        <button class="btn btn-excel" style="padding:8px 16px; font-size:13px; margin-left:6px;" onclick="copyPlainTextEmail()">📋 COPY PLAIN TEXT</button>
+      </div>
+      <button class="btn btn-del" onclick="closeComposeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Container -->
+<div class="container">
+  <div class="hdr">
+    <div><span class="logo">CitySavings</span> <span class="logo-sub">FSA LOAN RANGER</span></div>
+    <div class="hdr-title">FSA LOAN RANGER TABLET 2.1.0</div>
+    <div class="hdr-user">
+      👤 <span class="user-name" id="currentUserDisplay">—</span>
+      <button class="btn-logout" onclick="logout()">🚪 LOGOUT</button>
+    </div>
+  </div>
+
+  <div class="btns">
+    <button class="btn btn-new" onclick="newForm()">🆕 NEW / CLEAR</button>
+    <button class="btn btn-save" onclick="saveRecord()">💾 SAVE RECORD</button>
+    <button class="btn btn-excel" onclick="exportToExcel()">📤 EXPORT EXCEL</button>
+    <button class="btn btn-import" onclick="document.getElementById('excelInput').click()">📥 IMPORT EXCEL</button>
+    <button class="btn btn-print" onclick="openPrintPreview()">🖨️ PRINT FORM</button>
+    <button class="btn btn-email" onclick="emailToVerifier()">📧 COMPOSE EMAIL</button>
+    <input type="file" id="excelInput" style="display:none" accept=".xlsx,.xls" onchange="importFromExcel(event)">
+  </div>
+
+  <div id="statusBox" class="status-box"></div>
+
+  <div class="wrap">
+    <div class="side">
+      <div class="menu active" id="menuDash" onclick="showSection('dashboard')">🏠 DASHBOARD</div>
+      <div class="menu" id="menuLoan" onclick="showSection('loan')">📝 LOAN CALCULATOR</div>
+      <div class="menu" id="menuEmail" onclick="showSection('email')">📧 COMPOSE MAIL</div>
+      <div class="menu" id="menuReloan" onclick="showSection('reloanQualifier')">🔍 RELOAN QUALIFIER</div>
+      <div class="menu" id="menuRecords" onclick="showSection('records')">📋 SAVED RECORDS</div>
+      <div class="menu" id="menuReports" onclick="showSection('reports')">📊 REPORTS BY USER</div>
+      <div class="menu" id="menuLog" onclick="showSection('activityLog')">📝 ACTIVITY LOG</div>
+      <div class="menu" id="menuDb" onclick="showSection('database')">💾 DATABASE SYNC</div>
+    </div>
+
+    <!-- 🏠 EXECUTIVE DASHBOARD SECTION -->
+    <div class="content" id="dashboardSection">
+      <div class="sec">🏠 EXECUTIVE DASHBOARD & ANALYTICS</div>
+      
+      <!-- Date & Preset Filter -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px; background:#fff; padding:10px 15px; border-radius:8px; border:1px solid #e0e0e0;">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <span style="font-weight:bold; font-size:12px; color:#5E35B1;">FILTER:</span>
+          <button class="btn" style="background:#5E35B1; color:#fff;" onclick="setDashPreset('today')">Today</button>
+          <button class="btn" style="background:#e0e0e0; color:#333;" onclick="setDashPreset('week')">This Week</button>
+          <button class="btn" style="background:#e0e0e0; color:#333;" onclick="setDashPreset('month')">This Month</button>
+          <button class="btn" style="background:#e0e0e0; color:#333;" onclick="setDashPreset('all')">All Time</button>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="date" id="dashFrom" onchange="renderDashboard()" style="padding:5px; border:1px solid #ccc; border-radius:4px; font-size:12px;">
+          <span>to</span>
+          <input type="date" id="dashTo" onchange="renderDashboard()" style="padding:5px; border:1px solid #ccc; border-radius:4px; font-size:12px;">
+        </div>
+      </div>
+
+      <!-- KPI Grid -->
+      <div class="dash-kpi-grid">
+        <div class="dash-kpi-card purple">
+          <div class="dash-kpi-title">Total Applications</div>
+          <div class="dash-kpi-val" id="dKpiApps">0</div>
+          <div class="dash-kpi-sub">Total records logged</div>
+        </div>
+        <div class="dash-kpi-card blue">
+          <div class="dash-kpi-title">Total Loan Portfolio</div>
+          <div class="dash-kpi-val" id="dKpiVol">₱0</div>
+          <div class="dash-kpi-sub">Gross loan value</div>
+        </div>
+        <div class="dash-kpi-card green">
+          <div class="dash-kpi-title">Disbursed Volume</div>
+          <div class="dash-kpi-val" id="dKpiDisbVol">₱0</div>
+          <div class="dash-kpi-sub" id="dKpiDisbCount">0 Released Loans</div>
+        </div>
+        <div class="dash-kpi-card orange">
+          <div class="dash-kpi-title">Net Proceeds Value</div>
+          <div class="dash-kpi-val" id="dKpiNetPro">₱0</div>
+          <div class="dash-kpi-sub">Total net payout</div>
+        </div>
+        <div class="dash-kpi-card red">
+          <div class="dash-kpi-title">Conversion Rate</div>
+          <div class="dash-kpi-val" id="dKpiConv">0%</div>
+          <div class="dash-kpi-sub" id="dKpiLostCount">0 Lost Opps</div>
+        </div>
+      </div>
+
+      <!-- User Performance Leaderboard & Visual Distributions -->
+      <div class="dash-flex-row">
+        <!-- Officer Performance Leaderboard Table -->
+        <div class="dash-card" style="flex:2;">
+          <div class="dash-card-hdr">
+            <span>👤 FSA PERFORMANCE LEADERBOARD (NEW / RELOAN BREAKDOWN)</span>
+            <button class="btn btn-excel" onclick="exportUserReport()">📥 EXPORT REPORT</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Processing Officer</th>
+                  <th>New Loan</th>
+                  <th>Reloan</th>
+                  <th>Reloan Multiple</th>
+                  <th>Total Apps</th>
+                  <th>Total Loan Value</th>
+                  <th>Disbursed Vol</th>
+                  <th>Conv.</th>
+                </tr>
+              </thead>
+              <tbody id="dashUserTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Status Breakdown Card -->
+        <div class="dash-card">
+          <div class="dash-card-hdr">📊 PIPELINE STATUS BREAKDOWN</div>
+          <div id="dashStatusBars"></div>
+        </div>
+      </div>
+
+      <!-- PROCESS BY STATUS BY OFFICER MATRIX TABLE -->
+      <div class="dash-card" style="margin-bottom:18px;">
+        <div class="dash-card-hdr">
+          <span>⚙️ FSA PIPELINE PROCESS STATUS MATRIX (PROCESS BY STATUS BY USER)</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Processing Officer</th>
+                <th>🧮 Compute</th>
+                <th>⚙️ Process</th>
+                <th>📧 Email Sent</th>
+                <th>✅ Verified</th>
+                <th>💰 Disbursed</th>
+                <th>🏷️ Untagged</th>
+                <th>❌ Lost Opp</th>
+                <th>Total Apps</th>
+              </tr>
+            </thead>
+            <tbody id="dashUserStatusMatrixBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 📝 LOAN CALCULATOR SECTION -->
+    <div class="content" id="loanSection">
+      <div class="sec">CUSTOMER INFORMATION & JSON QUICK SEARCH</div>
+      <div class="row">
+        <label>ACCOUNT NAME 🔍</label>
+        <input type="text" id="accountName" class="yl" placeholder="Type name or search JSON database..." oninput="onAccountNameInput(this.value)" autocomplete="off">
+        <!-- JSON Client Quick Search Overlay -->
+        <div id="accountSearchOverlay" class="search-results-overlay"></div>
+      </div>
+      <div class="row"><label>APP. NUMBER</label><input type="text" id="custNumber" oninput="autoCompute()"></div>
+      <div class="row"><label>EMPLOYEE NUMBER</label><input type="text" id="empNumber" oninput="autoCompute()"></div>
+      
+      <!-- ADDED FIELDS: SCHOOL & CELLPHONE NUMBER -->
+      <div class="row"><label>SCHOOL / OFFICE</label><input type="text" id="custSchool" placeholder="e.g. Davao National High School" oninput="autoCompute()"></div>
+      <div class="row"><label>CELLPHONE NUMBER</label><input type="tel" id="custMobile" placeholder="e.g. 09171234567" oninput="autoCompute()"></div>
+
+      <div class="row"><label>DIVISION</label><input type="text" id="division" value="087" oninput="autoCompute()"></div>
+      <div class="row"><label>STATION</label><input type="text" id="station" oninput="autoCompute()"></div>
+      <div class="row"><label>GSIS NUMBER</label><input type="text" id="custGsisNumber" oninput="autoCompute()"></div>
+      <div class="row"><label>TIN NUMBER</label><input type="text" id="custTinNumber" oninput="autoCompute()"></div>
+      <div class="row"><label>EMAIL ADDRESS</label><input type="email" id="custEmail" oninput="autoCompute()"></div>
+      <div class="row"><label>MOTHER'S MAIDEN NAME</label><input type="text" id="custMotherMaiden" oninput="autoCompute()"></div>
+
+      <div class="row"><label>LOAN TYPE</label>
+        <select id="loanType" onchange="autoCompute()">
+          <option value="NEW LOAN">NEW LOAN / RECAPTURE</option>
+          <option value="RELOAN" selected>RELOAN</option>
+          <option value="RELOAN MULTIPLE">RELOAN MULTIPLE</option>
+        </select>
+      </div>
+
+      <div class="sec">PROCESS STATUS</div>
+      <div class="checkbox-row">
+        <div class="checkbox-item"><input type="checkbox" id="chkCompute" name="status" onchange="onlyOne(this)"><label>Compute</label></div>
+        <div class="checkbox-item"><input type="checkbox" id="chkProcess" name="status" onchange="onlyOne(this)"><label>Process</label></div>
+        <div class="checkbox-item"><input type="checkbox" id="chkEmailSent" name="status" onchange="onlyOne(this)"><label>Email Sent</label></div>
+        <div class="checkbox-item"><input type="checkbox" id="chkVerified" name="status" onchange="onlyOne(this)"><label>Verified</label></div>
+        <div class="checkbox-item"><input type="checkbox" id="chkDisburse" name="status" onchange="onlyOne(this)"><label>Disbursed</label></div>
+        <div class="checkbox-item"><input type="checkbox" id="chkUntag" name="status" onchange="onlyOne(this)"><label>Untagged</label></div>
+        <div class="checkbox-item"><input type="checkbox" id="chkLostOpp" name="status" onchange="onlyOne(this)"><label>Lost Opportunity</label></div>
+      </div>
+
+      <div class="sec">LOAN INFORMATION</div>
+      <div class="row"><label>LOAN AMOUNT</label><input type="number" id="loanAmt" class="amt-input yl" step="0.01" min="0" oninput="autoCompute()"></div>
+      <div class="row"><label>ADD BACK</label><input type="number" id="addBack" class="amt-input" value="0" step="0.01" oninput="autoCompute()"></div>
+      <div class="row"><label>UNDEDUCTED PLI</label><input type="number" id="undeductedPli" class="amt-input yl" value="0" step="0.01" oninput="autoCompute()"></div>
+      <div class="row"><label>TERM (Months)</label>
+        <select id="term" onchange="autoCompute()">
+          <option value="12">12 mos — 7.0% annual</option>
+          <option value="24">24 mos — 7.5% annual</option>
+          <option value="36">36 mos — 7.5% annual</option>
+          <option value="60">60 mos — 7.5% annual</option>
+          <option value="72">72 mos — 9.66% annual</option>
+          <option value="84" selected>84 mos — 9.66% annual</option>
+        </select>
+      </div>
+
+      <!-- Buyout Section -->
+      <div class="buyout-wrap">
+        <div style="font-weight:bold; font-size:13px; color:#5E35B1;">💰 BUYOUT / EXISTING LOANS</div>
+        <table class="buyout-table">
+          <thead>
+            <tr><th>Description / Creditor</th><th style="width:150px;">Outstanding Balance</th><th style="width:150px;">Monthly Deduction</th><th></th></tr>
+          </thead>
+          <tbody id="buyoutBody">
+            <tr>
+              <td><input type="text" class="buyout-input" placeholder="e.g. PLI / Other Bank" oninput="autoCompute()"></td>
+              <td><input type="number" class="buyout-input balance" placeholder="0.00" step="0.01" min="0" oninput="autoCompute()"></td>
+              <td><input type="number" class="buyout-input ded" placeholder="0.00" step="0.01" min="0" oninput="autoCompute()"></td>
+              <td><button class="btn-remove" onclick="removeBuyoutRow(this)" title="Remove">✕</button></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="buyout-total">
+              <td>TOTALS</td>
+              <td id="totalBuyoutBal">0.00</td>
+              <td id="totalBuyoutDed">0.00</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+        <button class="btn-buyout" onclick="addBuyoutRow()">+ ADD ANOTHER BUYOUT / PLI</button>
+      </div>
+
+      <div class="sec">✅ NTHP COMPUTATION (AUTO)</div>
+      <div class="row"><label>Latest Net Take Home Pay (NTHP)</label><input type="number" id="netpay" class="amt-input yl" step="0.01" min="0" oninput="autoCompute()"></div>
+      <div class="row"><label>Old CSB Monthly Deduction</label><input type="number" id="csbDed" class="amt-input yl" step="0.01" min="0" oninput="autoCompute()"></div>
+      <div class="row"><label>📐 TOTAL DEDUCTION</label><input type="text" id="total" class="amt-input rd" readonly></div>
+      <div class="row"><label>New CSB Amortization (Monthly)</label><input type="text" id="newDed" class="amt-input rd" readonly></div>
+      <div class="row" style="border-top:2px solid #ccc; padding-top:8px;"><label>✅ ACTUAL NET PAY (Take Home)</label><input type="text" id="newNthp" class="amt-input gr" readonly style="font-size:16px; font-weight:bold;"></div>
+      <div style="color:#d32f2f; font-size:12px; padding:4px 0;" id="netPayWarning"></div>
+
+      <div class="sec">💵 PROCEEDS COMPUTATION</div>
+      <div class="row"><label>Gross Proceeds (-6% Bank Charge)</label><input type="text" id="grossPro" class="amt-input rd" readonly></div>
+      <div class="row"><label>CSB Balance / Payoff Amount</label><input type="number" id="outBal" class="amt-input yl" step="0.01" min="0" oninput="autoCompute()"></div>
+      <div class="row" style="border-top:2px solid #ccc; padding-top:8px;"><label>✅ NET PROCEEDS (Client Receives)</label><input type="text" id="netPro" class="amt-input gr" readonly style="font-size:16px; font-weight:bold;"></div>
+    </div>
+
+    <!-- 📧 COMPOSE MAIL SECTION -->
+    <div class="content" id="emailSection">
+      <div class="sec">📧 COMPOSE MAIL & LOAN VERIFICATION</div>
+      <p style="color:#666; margin-bottom:15px; font-size:12px;">Specified mail for loan officers and verifiers.</p>
+
+      <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:15px; margin-bottom:20px;">
+        <div style="font-weight:bold; color:#333; margin-bottom:4px; font-size:13px;">CLIENTS READY FOR VERIFICATION</div>
+        <div style="color:#777; font-size:11px; margin-bottom:12px;">Derived from saved records, ready to generate purple-header styled email form.</div>
+
+        <div style="overflow-x:auto;">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Account Name</th>
+                <th>Loan Type</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="emailClientsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RECENT SENT EMAILS TABLE -->
+      <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:15px;">
+        <div style="font-weight:bold; color:#333; margin-bottom:12px; font-size:13px;">RECENT SENT EMAILS</div>
+        <div style="overflow-x:auto;">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Recipient</th>
+                <th>Subject</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="emailSentLogTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🔍 REVISED RELOAN QUALIFIER SECTION -->
+    <div class="content" id="reloanQualifierSection">
+      <div class="sec">🔍 QUALIFIED FOR RELOAN & CAPACITY EVALUATOR (BASED ON SAVED RECORDS)</div>
+      <p style="text-align:center; color:#555; margin-bottom:15px;">Select a client from <b>Saved Records</b> to predict reloan tenure readiness, projected net capacity, and maximum allowable loan amount.</p>
+      
+      <div class="row">
+        <label>Select Saved Record 📁</label>
+        <select id="rqSelectRecord" class="yl" onchange="loadSavedRecordToReloan(this.value)">
+          <option value="">-- Choose Borrower from Saved Records --</option>
+        </select>
+      </div>
+
+      <div class="row"><label>Client Name</label><input type="text" id="rqName" placeholder="Selected Borrower Name" readonly style="background:#f5f5f5;"></div>
+      <div class="row"><label>Original Loan Term (Months)</label><input type="text" id="rqOriginalTerm" readonly style="background:#f5f5f5;"></div>
+      <div class="row"><label>Origination Date</label><input type="text" id="rqOrigDate" readonly style="background:#f5f5f5;"></div>
+      <div class="row"><label>Calculated Paid Months</label><input type="number" id="rqMonthsPaid" class="amt-input yl" min="0" placeholder="e.g. 12" oninput="evaluateReloan()"></div>
+      <div class="row"><label>Current Monthly Deduction (CSB)</label><input type="number" id="rqCurrentAmort" class="amt-input" min="0" step="0.01" placeholder="0.00" oninput="evaluateReloan()"></div>
+      <div class="row"><label>Base Net Take Home Pay (NTHP)</label><input type="number" id="rqNthp" class="amt-input yl" min="0" step="0.01" placeholder="0.00" oninput="evaluateReloan()"></div>
+      <div class="row"><label>Target Reloan Amount</label><input type="number" id="rqTargetAmount" class="amt-input yl" min="0" step="0.01" placeholder="0.00" oninput="evaluateReloan()"></div>
+      <div class="row"><label>Target Term (Months)</label>
+        <select id="rqTargetTerm" onchange="evaluateReloan()">
+          <option value="12">12 mos — 7.0% annual</option>
+          <option value="24">24 mos — 7.5% annual</option>
+          <option value="36">36 mos — 7.5% annual</option>
+          <option value="60">60 mos — 7.5% annual</option>
+          <option value="72">72 mos — 9.66% annual</option>
+          <option value="84" selected>84 mos — 9.66% annual</option>
+        </select>
+      </div>
+
+      <div style="text-align:right; margin-top:15px;">
+        <button class="btn btn-save" style="padding:10px 20px; font-size:13px;" onclick="evaluateReloan()">⚡ PREDICT RELOAN ELIGIBILITY</button>
+      </div>
+
+      <div id="rqResultBox" class="reloan-result"></div>
+
+      <div style="margin-top:25px; border-top:2px solid #5E35B1; padding-top:15px;">
+        <div class="sec">📊 SAVED RECORDS RELOAN QUALIFICATION PREDICTION REPORT</div>
+        
+        <div class="dash-kpi-grid" style="margin-top:12px;">
+          <div class="dash-kpi-card purple">
+            <div class="dash-kpi-title">Saved Records Evaluated</div>
+            <div class="dash-kpi-val" id="rqKpiTotal">0</div>
+            <div class="dash-kpi-sub">Total Database Records</div>
+          </div>
+          <div class="dash-kpi-card green">
+            <div class="dash-kpi-title">Qualified for Reloan</div>
+            <div class="dash-kpi-val" id="rqKpiQualified">0</div>
+            <div class="dash-kpi-sub" id="rqKpiQualPct">0% Qualified Rate</div>
+          </div>
+          <div class="dash-kpi-card blue">
+            <div class="dash-kpi-title">Predicted Target Vol</div>
+            <div class="dash-kpi-val" id="rqKpiTargetVol">₱0</div>
+            <div class="dash-kpi-sub">Potential Reloan Value</div>
+          </div>
+          <div class="dash-kpi-card orange">
+            <div class="dash-kpi-title">Max Reloan Portfolio Capacity</div>
+            <div class="dash-kpi-val" id="rqKpiMaxVol">₱0</div>
+            <div class="dash-kpi-sub">Max allowable volume</div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; background:#f5f5f5; padding:10px; border-radius:6px;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span style="font-weight:bold; color:#5E35B1;">STATUS:</span>
+            <button class="btn" style="background:#5E35B1; color:#fff;" onclick="filterReloanReport('ALL')">All</button>
+            <button class="btn" style="background:#4CAF50; color:#fff;" onclick="filterReloanReport('QUALIFIED')">Qualified Only</button>
+            <button class="btn" style="background:#E53935; color:#fff;" onclick="filterReloanReport('FAILED')">Not Qualified</button>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="text" class="buyout-input" id="rqReportSearch" style="width:200px;" placeholder="Search client / officer..." oninput="renderReloanReportTable()">
+            <button class="btn btn-excel" onclick="exportReloanReportExcel()">📤 Export Excel Report</button>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Origination Date</th>
+                <th>Client Name</th>
+                <th>Paid / Orig Term</th>
+                <th>Current Amort</th>
+                <th>Base NTHP</th>
+                <th>Predicted Reloan</th>
+                <th>Projected Net Pay</th>
+                <th>Max Loan Capacity</th>
+                <th>Prediction Status</th>
+                <th>Officer</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="reloanReportTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 📋 SAVED RECORDS SECTION -->
+    <div class="content" id="recordsSection">
+      <div class="sec">📋 SAVED LOAN RECORDS</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+        <div style="font-weight:bold; color:#5E35B1;">Total Database Records: <span id="recordCount">0</span></div>
+        <input type="text" class="buyout-input" id="searchInput" style="width:260px;" placeholder="Search name / app# / officer..." oninput="renderRecords()">
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="record-table">
+          <thead><tr><th>Status</th><th>Account Name</th><th>School / Office</th><th>Mobile</th><th>Processed By</th><th>Loan Amount</th><th>Net Proceeds</th><th>Actions</th></tr></thead>
+          <tbody id="recordsList"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 📊 REPORTS BY USER SECTION -->
+    <div class="content" id="reportsSection">
+      <div class="sec">📊 DETAILED REPORTS BY USER</div>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; background:#f5f5f5; padding:10px; border-radius:6px; margin-bottom:15px;">
+        <label><strong>From:</strong></label><input type="date" id="filterFrom" onchange="renderReports()">
+        <label><strong>To:</strong></label><input type="date" id="filterTo" onchange="renderReports()">
+        <label><strong>Officer:</strong></label><select id="filterUser" onchange="renderReports()"><option value="">All Officers</option></select>
+        <button class="btn btn-excel" onclick="exportToExcel()">📥 Export Detailed Excel</button>
+      </div>
+
+      <div style="font-weight:bold; color:#5E35B1; margin:15px 0 8px 0; font-size:13px;">📈 FSA LOAN TYPE PERFORMANCE BREAKDOWN</div>
+      <div style="overflow-x:auto; margin-bottom:20px;">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Processing Officer</th>
+              <th>New Loan Count</th>
+              <th>New Loan Volume</th>
+              <th>Reloan Count</th>
+              <th>Reloan Volume</th>
+              <th>Reloan Multiple Count</th>
+              <th>Reloan Multiple Volume</th>
+              <th>Total Volume</th>
+            </tr>
+          </thead>
+          <tbody id="rptLoanTypeSummaryBody"></tbody>
+        </table>
+      </div>
+
+      <div style="font-weight:bold; color:#5E35B1; margin:15px 0 8px 0; font-size:13px;">📋 DETAILED TRANSACTION LOGS</div>
+      <div style="overflow-x:auto;">
+        <table class="report-table">
+          <thead><tr><th>Date</th><th>Account Name</th><th>School</th><th>Mobile</th><th>Loan Type</th><th>Officer</th><th>Loan Amount</th><th>Net Proceeds</th></tr></thead>
+          <tbody id="rptLoanTypeBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 📝 ACTIVITY LOG SECTION -->
+    <div class="content" id="activityLogSection">
+      <div class="sec">📝 SYSTEM ACTIVITY LOG</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <input type="text" class="buyout-input" id="logSearch" style="width:250px;" placeholder="Search log entries..." oninput="renderActivityLog()">
+        <button class="btn btn-clearlog" onclick="clearActivityLog()">🗑️ Clear Log</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="record-table">
+          <thead><tr><th>Date & Time</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
+          <tbody id="activityLogList"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 💾 DATABASE SECTION -->
+    <div class="content" id="databaseSection">
+      <div class="sec">💾 JSON DATABASE SYNC & BACKUP</div>
+      <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:20px;">
+        <div style="flex:1; background:#f9f9fb; border:1px solid #ddd; padding:20px; border-radius:8px; text-align:center;">
+          <h3>Export System Data (JSON)</h3>
+          <p style="color:#666; font-size:12px;">Download all records, officer accounts, reloan evaluation reports, and logs as a single JSON file.</p>
+          <button class="btn btn-excel" style="padding:10px 20px;" onclick="exportJSONDatabase()">⬇️ DOWNLOAD JSON DATABASE</button>
+        </div>
+        <div style="flex:1; background:#f9f9fb; border:1px solid #ddd; padding:20px; border-radius:8px; text-align:center;">
+          <h3>Import System Data (JSON)</h3>
+          <p style="color:#666; font-size:12px;">Restore records and sync databases from another device.</p>
+          <input type="file" id="jsonInput" style="display:none" accept=".json" onchange="importJSONDatabase(event)">
+          <button class="btn btn-save" style="padding:10px 20px;" onclick="document.getElementById('jsonInput').click()">⬆️ IMPORT JSON DATABASE</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer"><div class="footer-name">Created & Developed By WILSON COMILLE BORNALES — FSA LOAN RANGER 2.1.0</div></div>
+</div>
+
+</div><!-- END system-container -->
+
+<script>
+// ==============================================
+// 🔐 LOGIN & USER MANAGEMENT
+// ==============================================
+const DEFAULT_USERS = { 'admin': '06161986' };
+
+function getUsers() {
+  const saved = localStorage.getItem('fsaUsers');
+  if (saved) return JSON.parse(saved);
+  localStorage.setItem('fsaUsers', JSON.stringify(DEFAULT_USERS));
+  return { ...DEFAULT_USERS };
+}
+
+function saveUsers(users) {
+  localStorage.setItem('fsaUsers', JSON.stringify(users));
+}
+
+function getCurrentLoggedInUser() {
+  return localStorage.getItem('fsaCurrentUser') || '';
+}
+
+function setCurrentLoggedInUser(username) {
+  localStorage.setItem('fsaCurrentUser', username);
+}
+
+function doLogin() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errorEl = document.getElementById('loginError');
+
+  if (!username || !password) {
+    errorEl.textContent = 'Please enter username and password!';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const users = getUsers();
+  if (users[username] && users[username] === password) {
+    setCurrentLoggedInUser(username);
+    document.getElementById('currentUserDisplay').textContent = username.toUpperCase();
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainSystem').style.display = 'block';
+    errorEl.style.display = 'none';
+    addLog('User Login', `${username} logged in`);
+    initializeSystem();
+  } else {
+    errorEl.textContent = 'Invalid username or password!';
+    errorEl.style.display = 'block';
+  }
+}
+
+function toggleAddUser() {
+  const section = document.getElementById('addUserSection');
+  section.style.display = section.style.display === 'block' ? 'none' : 'block';
+}
+
+function addNewUser() {
+  const adminUser = document.getElementById('adminUsername').value.trim();
+  const adminPass = document.getElementById('adminPassword').value;
+  const newUser = document.getElementById('newUsername').value.trim();
+  const newPass = document.getElementById('newPassword').value;
+  const errorEl = document.getElementById('addUserError');
+
+  const users = getUsers();
+  if (adminUser !== 'admin' || users['admin'] !== adminPass) {
+    errorEl.textContent = 'Invalid admin credentials!';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  if (users[newUser]) {
+    errorEl.textContent = 'User already exists!';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  users[newUser] = newPass;
+  saveUsers(users);
+  errorEl.textContent = `Officer "${newUser}" created!`;
+  errorEl.style.display = 'block';
+  errorEl.style.color = '#2E7D32';
+  
+  setTimeout(() => {
+    document.getElementById('addUserSection').style.display = 'none';
+    errorEl.style.display = 'none';
+    errorEl.style.color = '#E53935';
+  }, 1800);
+}
+
+function logout() {
+  if (confirm('Logout of system?')) {
+    addLog('User Logout', `${getCurrentLoggedInUser()} logged out`);
+    localStorage.removeItem('fsaCurrentUser');
+    document.getElementById('mainSystem').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+}
+
+function checkLoginStatus() {
+  const currentUser = getCurrentLoggedInUser();
+  if (currentUser) {
+    document.getElementById('currentUserDisplay').textContent = currentUser.toUpperCase();
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainSystem').style.display = 'block';
+    initializeSystem();
+  }
+}
+
+// ==============================================
+// 📐 CONFIGURATION & SAMPLE DATA
+// ==============================================
+const TERM_RATES = { 12: 0.07, 24: 0.075, 36: 0.075, 60: 0.075, 72: 0.0966, 84: 0.0966 };
+const BANK_CHARGE = 0.06;
+const MIN_NET_PAY = 5300;
+
+let loanRecords = [];
+let activityLog = [];
+let sentEmailsLog = [];
+let editingId = null;
+let currentReloanReportFilter = 'ALL';
+
+function getElapsedMonths(createdAtStr) {
+  if (!createdAtStr) return 0;
+  const created = new Date(createdAtStr);
+  const now = new Date();
+  let months = (now.getFullYear() - created.getFullYear()) * 12 + (now.getMonth() - created.getMonth());
+  if (now.getDate() < created.getDate()) months--;
+  return Math.max(0, months);
+}
+
+function formatDateMMDDYYYY(d) {
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${mm}/${dd}/${yyyy}`;
+}
+
+function seedInitialData() {
+  if (loanRecords.length === 0) {
+    const eightMonthsAgo = new Date();
+    eightMonthsAgo.setMonth(eightMonthsAgo.getMonth() - 8);
+
+    loanRecords = [
+      {
+        id: 1710000001000,
+        accountName: 'NECA JEAN PRESCIOSO SALIMBAGO',
+        school: 'Davao City National High School',
+        mobile: '09171234567',
+        loanType: 'NEW LOAN',
+        appNumber: 'APP-2026-001',
+        empNumber: 'EMP-90811',
+        division: '087',
+        station: 'ST-01',
+        loanAmt: 150000,
+        term: 84,
+        netpay: 10053.59,
+        csbDed: 0,
+        addBack: 0,
+        undeductedPli: 0,
+        csbBal: 0,
+        email: 'jeaniferebing.arguilla@deped.gov.ph',
+        buyout: { items: [], totalBal: 0, totalDed: 0 },
+        total: 10053.59,
+        amort: 2463.91,
+        actualNet: 7589.68,
+        processedBy: 'EMMANUEL MERCADO',
+        status: { process: true },
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 1710000002000,
+        accountName: 'WILSON COMILLE BORNALES',
+        school: 'Mabini Elementary School',
+        mobile: '09189876543',
+        loanType: 'RELOAN',
+        appNumber: 'APP-2026-002',
+        empNumber: 'EMP-88123',
+        division: '087',
+        station: 'ST-02',
+        loanAmt: 180000,
+        term: 60,
+        netpay: 11200,
+        csbDed: 3200,
+        addBack: 0,
+        undeductedPli: 0,
+        csbBal: 50000,
+        email: 'wilson.bornales@deped.gov.ph',
+        buyout: { items: [], totalBal: 0, totalDed: 0 },
+        total: 14400,
+        amort: 3610.20,
+        actualNet: 10789.80,
+        processedBy: 'admin',
+        status: { disburse: true },
+        createdAt: eightMonthsAgo.toISOString()
+      }
+    ];
+    saveToStorage();
+  }
+
+  if (sentEmailsLog.length === 0) {
+    sentEmailsLog = [
+      { recipient: 'NECA JEAN PRESCIOSO SALIMBAGO', subject: 'Request for Confirmation of Evaluated APDS Loan / City Savings Bank Code : 0339 / NECA JEAN PRESCIOSO SALIMBAGO', date: '09/26/2026, 11:17 PM' }
+    ];
+    localStorage.setItem('sentEmailsLog', JSON.stringify(sentEmailsLog));
+  }
+}
+
+// ==============================================
+// 🧮 MATH & AMORTIZATION COMPUTATIONS
+// ==============================================
+function getAmortization(principal, months) {
+  if (!principal || !months || principal <= 0 || months <= 0) return 0;
+  const mRate = TERM_RATES[months] / 12;
+  if (!mRate) return 0;
+  const factor = Math.pow(1 + mRate, months);
+  return principal * mRate * factor / (factor - 1);
+}
+
+function getMaxLoanableAmount(totalBase, targetTerm) {
+  const maxAmort = totalBase - MIN_NET_PAY;
+  if (maxAmort <= 0) return 0;
+  const mRate = TERM_RATES[targetTerm] / 12;
+  if (!mRate) return 0;
+  const factor = Math.pow(1 + mRate, targetTerm);
+  return maxAmort * (factor - 1) / (mRate * factor);
+}
+
+function formatNum(n) { return (n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function parseNum(s) { return parseFloat((s || '').toString().replace(/[₱,\s]/g, '')) || 0; }
+function fmtMoney(x) { return '₱' + formatNum(x); }
+
+function showStatus(msg, isSuccess = true) {
+  const box = document.getElementById('statusBox');
+  box.className = `status-box ${isSuccess ? 'status-success' : 'status-error'}`;
+  box.textContent = msg;
+  setTimeout(() => { box.className = 'status-box'; }, 3500);
+}
+
+function onlyOne(box) {
+  document.querySelectorAll('input[name="status"]').forEach(b => { if (b !== box) b.checked = false; });
+}
+
+// ==============================================
+// ⚡ JSON AUTO-SEARCH & LIST VIEW AUTO-FILL
+// ==============================================
+function onAccountNameInput(query) {
+  const overlay = document.getElementById('accountSearchOverlay');
+  if (!query || query.length < 2) {
+    overlay.style.display = 'none';
+    autoCompute();
+    return;
+  }
+
+  const matches = loanRecords.filter(r => 
+    r.accountName.toLowerCase().includes(query.toLowerCase()) ||
+    (r.appNumber && r.appNumber.toLowerCase().includes(query.toLowerCase())) ||
+    (r.empNumber && r.empNumber.toLowerCase().includes(query.toLowerCase())) ||
+    (r.school && r.school.toLowerCase().includes(query.toLowerCase()))
+  );
+
+  if (matches.length === 0) {
+    overlay.style.display = 'none';
+    autoCompute();
+    return;
+  }
+
+  overlay.innerHTML = matches.map(r => `
+    <div class="search-item-row" onclick="selectClientToForm(${r.id})">
+      <div>
+        <div class="search-item-name">${r.accountName}</div>
+        <div class="search-item-sub">${r.school || 'No School'} | Emp: ${r.empNumber || '—'} | Loan: ${fmtMoney(r.loanAmt)}</div>
+      </div>
+      <button class="btn btn-new" style="padding:3px 8px; font-size:10px;">Select ⚡</button>
+    </div>
+  `).join('');
+  overlay.style.display = 'block';
+}
+
+function selectClientToForm(recordId) {
+  const rec = loanRecords.find(r => r.id === recordId);
+  if (!rec) return;
+
+  document.getElementById('accountName').value = rec.accountName;
+  document.getElementById('custNumber').value = rec.appNumber || '';
+  document.getElementById('empNumber').value = rec.empNumber || '';
+  document.getElementById('custSchool').value = rec.school || '';
+  document.getElementById('custMobile').value = rec.mobile || '';
+  document.getElementById('division').value = rec.division || '087';
+  document.getElementById('station').value = rec.station || '';
+  document.getElementById('custGsisNumber').value = rec.gsisNumber || '';
+  document.getElementById('custTinNumber').value = rec.tinNumber || '';
+  document.getElementById('custEmail').value = rec.email || '';
+  document.getElementById('custMotherMaiden').value = rec.motherMaiden || '';
+  document.getElementById('loanAmt').value = rec.loanAmt || '';
+  document.getElementById('term').value = rec.term || 84;
+  document.getElementById('loanType').value = rec.loanType || 'RELOAN';
+  document.getElementById('netpay').value = rec.netpay || '';
+  document.getElementById('csbDed').value = rec.csbDed || '';
+  document.getElementById('addBack').value = rec.addBack || 0;
+  document.getElementById('undeductedPli').value = rec.undeductedPli || 0;
+  document.getElementById('outBal').value = rec.csbBal || '';
+
+  if (rec.buyout) loadBuyout(rec.buyout);
+  document.getElementById('accountSearchOverlay').style.display = 'none';
+  autoCompute();
+  showStatus(`Loaded profile for ${rec.accountName}`);
+  addLog('Auto-Filled Client Form', rec.accountName);
+}
+
+// ==============================================
+// 📧 ENHANCED HTML EMAIL GENERATOR MODAL (REDUCED SPACING)
+// ==============================================
+
+function openComposeModal(recId = null) {
+  let rec = null;
+  if (recId) rec = loanRecords.find(r => r.id === recId);
+
+  const name = rec ? rec.accountName : (document.getElementById('accountName').value || 'NECA JEAN PRESCIOSO SALIMBAGO');
+  const loanAmt = rec ? rec.loanAmt : parseNum(document.getElementById('loanAmt').value);
+  const term = rec ? rec.term : (parseInt(document.getElementById('term').value) || 84);
+  const amort = rec ? rec.amort : parseNum(document.getElementById('newDed').value);
+  const netpay = rec ? rec.netpay : parseNum(document.getElementById('netpay').value);
+  const csbDed = rec ? rec.csbDed : parseNum(document.getElementById('csbDed').value);
+  const addBack = rec ? rec.addBack : parseNum(document.getElementById('addBack').value);
+  const undeductedPli = rec ? rec.undeductedPli : parseNum(document.getElementById('undeductedPli').value);
+  const total = rec ? rec.total : parseNum(document.getElementById('total').value);
+  const actualNet = rec ? rec.actualNet : parseNum(document.getElementById('newNthp').value);
+  const officerName = rec ? (rec.processedBy || 'EMMANUEL MERCADO') : (getCurrentLoggedInUser() || 'EMMANUEL MERCADO').toUpperCase();
+  let lType = rec ? rec.loanType : (document.getElementById('loanType').value || 'NEW LOAN');
+
+  let rawType = lType.toUpperCase().replace(/\s+/g, '');
+  if (rawType.includes('NEW')) rawType = 'NEWLOAN';
+  else if (rawType.includes('MULTIPLE')) rawType = 'RELOANMULTIPLE';
+  else if (rawType.includes('RELOAN')) rawType = 'RELOAN';
+
+  const evalDate = new Date();
+  const evalDateStr = formatDateMMDDYYYY(evalDate);
+
+  const firstDeduction = new Date(evalDate);
+  firstDeduction.setMonth(firstDeduction.getMonth() + 1);
+
+  const finalDeduction = new Date(evalDate);
+  finalDeduction.setMonth(finalDeduction.getMonth() + parseInt(term));
+
+  const firstDedStr = formatDateMMDDYYYY(firstDeduction);
+  const finalDedStr = formatDateMMDDYYYY(finalDeduction);
+
+  const nameParts = name.trim().split(' ');
+  const lastName = nameParts[nameParts.length - 1].toUpperCase();
+
+  // Populate HTML Preview Modal
+  document.getElementById('mSalutation').textContent = `Dear Miss ${lastName}`;
+  document.getElementById('mLoanAmt').textContent = formatNum(loanAmt);
+  document.getElementById('mTermDates').textContent = `${term} (${firstDedStr} / ${finalDedStr}`;
+  document.getElementById('mAmort').textContent = formatNum(amort);
+  document.getElementById('mEvalDate').textContent = evalDateStr;
+  document.getElementById('mOfficer').textContent = officerName;
+  document.getElementById('mLoanType').textContent = rawType;
+
+  document.getElementById('mNthp').textContent = formatNum(netpay);
+  document.getElementById('mOldDed').textContent = formatNum(csbDed);
+  document.getElementById('mOthers').textContent = formatNum(addBack);
+  document.getElementById('mPliDed').textContent = formatNum(undeductedPli);
+  document.getElementById('mTotalNthp').textContent = formatNum(total);
+  document.getElementById('mNewDed').textContent = formatNum(amort);
+  document.getElementById('mActualNet').textContent = formatNum(actualNet);
+
+  document.getElementById('emailModalOverlay').classList.add('show');
+}
+
+function closeComposeModal() {
+  document.getElementById('emailModalOverlay').classList.remove('show');
+}
+
+// Copy Rich HTML version to Clipboard (For direct pasting into Gmail/Outlook)
+function copyRichHtmlEmail() {
+  const contentEl = document.getElementById('emailCardContent');
+  if (!contentEl) return;
+
+  const range = document.createRange();
+  range.selectNode(contentEl);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+
+  try {
+    document.execCommand('copy');
+    showStatus('Rich HTML Email Form copied! Ready to paste in Gmail/Outlook.');
+    addLog('Copied HTML Email Form', 'Rich template generated');
+  } catch (err) {
+    showStatus('Failed to copy HTML content!', false);
+  }
+  window.getSelection().removeAllRanges();
+}
+
+// Copy Plain Text version to Clipboard
+function copyPlainTextEmail() {
+  const contentEl = document.getElementById('emailCardContent');
+  if (!contentEl) return;
+
+  const text = contentEl.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    showStatus('Plain text Email Form copied!');
+  }).catch(() => {
+    showStatus('Copying failed!', false);
+  });
+}
+
+function emailToVerifier() {
+  openComposeModal();
+}
+
+function renderEmailSectionTables() {
+  const readyBody = document.getElementById('emailClientsTableBody');
+  if (readyBody) {
+    readyBody.innerHTML = loanRecords.map(r => `
+      <tr>
+        <td><strong>${r.accountName}</strong></td>
+        <td>Loan Officer</td>
+        <td>
+          <button class="btn btn-save" style="padding:4px 10px; font-size:11px; background:#1565C0;" onclick="openComposeModal(${r.id})">Generate Form</button>
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="3" style="text-align:center;padding:15px;">No saved records ready for verification</td></tr>';
+  }
+
+  const sentBody = document.getElementById('emailSentLogTableBody');
+  if (sentBody) {
+    sentBody.innerHTML = sentEmailsLog.map(e => `
+      <tr>
+        <td><strong>${e.recipient}</strong></td>
+        <td>${e.subject}</td>
+        <td>${e.date}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="3" style="text-align:center;padding:15px;">No recent emails sent</td></tr>';
+  }
+}
+
+// ==============================================
+// 🔍 RELOAN QUALIFIER ENGINE
+// ==============================================
+
+function populateReloanRecordSelector() {
+  const selectEl = document.getElementById('rqSelectRecord');
+  if (!selectEl) return;
+
+  selectEl.innerHTML = '<option value="">-- Choose Borrower from Saved Records --</option>' +
+    loanRecords.map(r => `
+      <option value="${r.id}">${r.accountName} (Loan: ${fmtMoney(r.loanAmt)} | Orig: ${new Date(r.createdAt).toLocaleDateString('en-PH')})</option>
+    `).join('');
+}
+
+function loadSavedRecordToReloan(recordId) {
+  if (!recordId) return;
+  const rec = loanRecords.find(r => r.id === parseInt(recordId));
+  if (!rec) return;
+
+  const elapsedMonths = getElapsedMonths(rec.createdAt);
+
+  document.getElementById('rqName').value = rec.accountName;
+  document.getElementById('rqOriginalTerm').value = (rec.term || 84) + ' Months';
+  document.getElementById('rqOrigDate').value = new Date(rec.createdAt).toLocaleDateString('en-PH');
+  document.getElementById('rqMonthsPaid').value = elapsedMonths;
+  document.getElementById('rqCurrentAmort').value = rec.csbDed || rec.amort || 0;
+  document.getElementById('rqNthp').value = rec.netpay || 0;
+  document.getElementById('rqTargetAmount').value = (rec.loanAmt || 100000) + 50000;
+  document.getElementById('rqTargetTerm').value = rec.term || 84;
+
+  evaluateReloan();
+}
+
+function evaluateReloan() {
+  const name = document.getElementById('rqName').value.trim() || 'Selected Borrower';
+  const monthsPaid = parseInt(document.getElementById('rqMonthsPaid').value) || 0;
+  const currAmort = parseNum(document.getElementById('rqCurrentAmort').value);
+  const nthp = parseNum(document.getElementById('rqNthp').value);
+  const targetAmount = parseNum(document.getElementById('rqTargetAmount').value);
+  const targetTerm = parseInt(document.getElementById('rqTargetTerm').value) || 84;
+
+  const resultBox = document.getElementById('rqResultBox');
+
+  if (!nthp || !targetTerm) {
+    resultBox.innerHTML = "<b>Select a saved record to calculate reloan prediction metrics.</b>";
+    resultBox.className = "reloan-result reloan-fail";
+    resultBox.style.display = "block";
+    return;
+  }
+
+  const minMonthsRequired = 6;
+  const projectedTotalBase = nthp + currAmort;
+  const newAmort = getAmortization(targetAmount, targetTerm);
+  const projectedNthp = projectedTotalBase - newAmort;
+  const maxLoanCapacity = getMaxLoanableAmount(projectedTotalBase, targetTerm);
+
+  let isQualified = true;
+  let failReason = '';
+
+  if (monthsPaid < minMonthsRequired) {
+    isQualified = false;
+    failReason = `Tenure paid (${monthsPaid} mos elapsed) is below required minimum threshold (${minMonthsRequired} mos).`;
+  } else if (projectedNthp < MIN_NET_PAY) {
+    isQualified = false;
+    failReason = `Projected NTHP (${fmtMoney(projectedNthp)}) is below minimum required take-home threshold (₱5,300).`;
+  }
+
+  const safeName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+  if (!isQualified) {
+    resultBox.innerHTML = `
+      <b>❌ PREDICTION: NOT QUALIFIED FOR RELOAN YET</b><br>
+      • <b>Borrower:</b> ${name}<br>
+      • <b>Reason:</b> ${failReason}<br>
+      • <b>New Monthly Amortization:</b> ${fmtMoney(newAmort)}<br><br>
+      <div class="reloan-highlight">💡 MAXIMUM ALLOWABLE RELOAN CAPACITY: ${fmtMoney(maxLoanCapacity)}</div>
+    `;
+    resultBox.className = "reloan-result reloan-fail";
+    resultBox.style.display = "block";
+    return;
+  }
+
+  resultBox.innerHTML = `
+    <b>✅ PREDICTION: QUALIFIED FOR RELOAN AGAIN!</b><br>
+    • <b>Borrower:</b> ${name}<br>
+    • <b>Elapsed Paid Tenure:</b> ${monthsPaid} Months<br>
+    • <b>Requested Reloan Amount:</b> ${fmtMoney(targetAmount)} (${targetTerm} Months)<br>
+    • <b>New Monthly Amortization:</b> ${fmtMoney(newAmort)}<br>
+    • <b>Projected Actual Net Pay:</b> <span style="color:#2E7D32; font-weight:bold;">${fmtMoney(projectedNthp)}</span> (Complies with ₱5,300 minimum threshold)<br>
+    • <b>Maximum Allowable Loan Capacity:</b> <b>${fmtMoney(maxLoanCapacity)}</b><br><br>
+    <button class="btn btn-save" style="padding:8px 16px;" onclick="transferReloanToCalculator('${safeName}', ${targetAmount}, ${targetTerm}, ${nthp}, ${currAmort})">⚡ APPLY TO LOAN CALCULATOR</button>
+  `;
+  resultBox.className = "reloan-result reloan-pass";
+  resultBox.style.display = "block";
+}
+
+function transferReloanToCalculator(name, amt, term, nthp, oldAmort) {
+  newForm();
+  document.getElementById('accountName').value = name;
+  document.getElementById('loanType').value = 'RELOAN';
+  document.getElementById('loanAmt').value = amt;
+  document.getElementById('term').value = term;
+  document.getElementById('netpay').value = nthp;
+  document.getElementById('csbDed').value = oldAmort;
+  autoCompute();
+  showSection('loan');
+  showStatus(`Transferred reloan parameters for ${name}`);
+}
+
+function filterReloanReport(status) {
+  currentReloanReportFilter = status;
+  renderReloanReportTable();
+}
+
+function getSavedRecordsReloanPredictions() {
+  return loanRecords.map(rec => {
+    const monthsPaid = getElapsedMonths(rec.createdAt);
+    const currAmort = rec.csbDed || rec.amort || 0;
+    const nthp = rec.netpay || 0;
+    const targetTerm = rec.term || 84;
+    const targetAmount = (rec.loanAmt || 100000) + 50000;
+
+    const projectedTotalBase = nthp + currAmort;
+    const newAmort = getAmortization(targetAmount, targetTerm);
+    const projectedNthp = projectedTotalBase - newAmort;
+    const maxLoanCapacity = getMaxLoanableAmount(projectedTotalBase, targetTerm);
+
+    let isQualified = true;
+    let failReason = '';
+
+    if (monthsPaid < 6) {
+      isQualified = false;
+      failReason = `Tenure (${monthsPaid} mos) < 6 mos`;
+    } else if (projectedNthp < MIN_NET_PAY) {
+      isQualified = false;
+      failReason = `Projected NTHP < ₱5,300`;
+    }
+
+    return {
+      id: rec.id,
+      origDate: new Date(rec.createdAt).toLocaleDateString('en-PH'),
+      createdAt: rec.createdAt,
+      name: rec.accountName,
+      origTerm: rec.term || 84,
+      monthsPaid,
+      currAmort,
+      nthp,
+      targetAmount,
+      targetTerm,
+      projectedNthp,
+      maxCapacity: maxLoanCapacity,
+      status: isQualified ? 'QUALIFIED' : 'FAILED',
+      failReason,
+      evalBy: rec.processedBy || 'System'
+    };
+  });
+}
+
+function renderReloanReportTable() {
+  const kw = (document.getElementById('rqReportSearch')?.value || '').toLowerCase();
+  const predictions = getSavedRecordsReloanPredictions();
+
+  let filtered = [...predictions];
+  if (currentReloanReportFilter === 'QUALIFIED') {
+    filtered = filtered.filter(e => e.status === 'QUALIFIED');
+  } else if (currentReloanReportFilter === 'FAILED') {
+    filtered = filtered.filter(e => e.status === 'FAILED');
+  }
+
+  if (kw) {
+    filtered = filtered.filter(e => 
+      e.name.toLowerCase().includes(kw) || 
+      (e.evalBy && e.evalBy.toLowerCase().includes(kw))
+    );
+  }
+
+  const totalCount = predictions.length;
+  const qualCount = predictions.filter(e => e.status === 'QUALIFIED').length;
+  const qualPct = totalCount > 0 ? ((qualCount / totalCount) * 100).toFixed(0) : 0;
+  const targetVol = predictions.filter(e => e.status === 'QUALIFIED').reduce((s, e) => s + (e.targetAmount || 0), 0);
+  const maxVol = predictions.filter(e => e.status === 'QUALIFIED').reduce((s, e) => s + (e.maxCapacity || 0), 0);
+
+  document.getElementById('rqKpiTotal').textContent = totalCount;
+  document.getElementById('rqKpiQualified').textContent = qualCount;
+  document.getElementById('rqKpiQualPct').textContent = `${qualPct}% Qualified Rate`;
+  document.getElementById('rqKpiTargetVol').textContent = fmtMoney(targetVol);
+  document.getElementById('rqKpiMaxVol').textContent = fmtMoney(maxVol);
+
+  document.getElementById('reloanReportTableBody').innerHTML = filtered.map(e => {
+    const isQual = e.status === 'QUALIFIED';
+    const badge = isQual ? `<span class="badge-loan badge-reloan">✅ QUALIFIED AGAIN</span>` : `<span class="status-pill pill-lost">⏳ ${e.failReason}</span>`;
+    const safeName = (e.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+    return `
+      <tr>
+        <td>${e.origDate}</td>
+        <td><strong>${e.name}</strong></td>
+        <td>${e.monthsPaid} / ${e.origTerm} mos</td>
+        <td>${fmtMoney(e.currAmort)}</td>
+        <td>${fmtMoney(e.nthp)}</td>
+        <td>${fmtMoney(e.targetAmount)} (${e.targetTerm}m)</td>
+        <td><strong style="color:${isQual ? '#2E7D32' : '#C62828'};">${fmtMoney(e.projectedNthp)}</strong></td>
+        <td><strong>${fmtMoney(e.maxCapacity)}</strong></td>
+        <td>${badge}</td>
+        <td>${e.evalBy || '—'}</td>
+        <td>
+          ${isQual ? `<button class="btn btn-save" style="padding:3px 6px; font-size:10px;" onclick="transferReloanToCalculator('${safeName}', ${e.targetAmount}, ${e.targetTerm}, ${e.nthp}, ${e.currAmort})">⚡ Apply</button>` : '—'}
+        </td>
+      </tr>
+    `;
+  }).join('') || '<tr><td colspan="11" style="text-align:center;padding:15px;">No saved records found for reloan prediction</td></tr>';
+}
+
+function exportReloanReportExcel() {
+  const predictions = getSavedRecordsReloanPredictions();
+  if (!predictions.length) { showStatus('No evaluation predictions to export!', false); return; }
+  const XLSX = window.XLSX;
+  const rows = predictions.map(e => [
+    e.origDate, e.name, e.monthsPaid, e.origTerm, e.currAmort, e.nthp,
+    e.targetAmount, e.targetTerm, e.projectedNthp, e.maxCapacity, e.status, e.failReason || 'Qualified for Reloan', e.evalBy
+  ]);
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['Origination Date', 'Client Name', 'Paid Months Elapsed', 'Original Term', 'Current Amort', 'Base NTHP', 'Predicted Reloan', 'Target Term', 'Projected Net Pay', 'Max Capacity', 'Prediction Status', 'Remarks', 'Officer'],
+    ...rows
+  ]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Reloan Prediction Report');
+  XLSX.writeFile(wb, `FSA_Reloan_Qualifier_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+  addLog('Exported Reloan Report', `${predictions.length} saved records reloan predictions exported`);
+}
+
+// ==============================================
+// 🏠 EXECUTIVE DASHBOARD & USER REPORTS
+// ==============================================
+let currentDashPreset = 'all';
+
+function setDashPreset(preset) {
+  currentDashPreset = preset;
+  const today = new Date().toISOString().split('T')[0];
+  
+  if (preset === 'today') {
+    document.getElementById('dashFrom').value = today;
+    document.getElementById('dashTo').value = today;
+  } else if (preset === 'week') {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    document.getElementById('dashFrom').value = d.toISOString().split('T')[0];
+    document.getElementById('dashTo').value = today;
+  } else if (preset === 'month') {
+    const d = new Date();
+    d.setDate(1);
+    document.getElementById('dashFrom').value = d.toISOString().split('T')[0];
+    document.getElementById('dashTo').value = today;
+  } else {
+    document.getElementById('dashFrom').value = '';
+    document.getElementById('dashTo').value = '';
+  }
+  renderDashboard();
+}
+
+function getOfficerStats(filteredRecords) {
+  const userStats = {};
+  filteredRecords.forEach(r => {
+    const user = r.processedBy || 'Unassigned';
+    if (!userStats[user]) {
+      userStats[user] = {
+        apps: 0, vol: 0, netPro: 0, disbCount: 0, disbVol: 0,
+        newCount: 0, newVol: 0,
+        reloanCount: 0, reloanVol: 0,
+        reloanMultCount: 0, reloanMultVol: 0,
+        compute: 0, process: 0, emailSent: 0, verified: 0, disburse: 0, untag: 0, lostOpp: 0
+      };
+    }
+    userStats[user].apps++;
+    userStats[user].vol += r.loanAmt || 0;
+    userStats[user].netPro += r.netPro || 0;
+
+    const lt = (r.loanType || '').toUpperCase();
+    if (lt.includes('NEW')) {
+      userStats[user].newCount++;
+      userStats[user].newVol += r.loanAmt || 0;
+    } else if (lt.includes('MULTIPLE')) {
+      userStats[user].reloanMultCount++;
+      userStats[user].reloanMultVol += r.loanAmt || 0;
+    } else if (lt.includes('RELOAN')) {
+      userStats[user].reloanCount++;
+      userStats[user].reloanVol += r.loanAmt || 0;
+    }
+
+    if (r.status?.compute) userStats[user].compute++;
+    if (r.status?.process) userStats[user].process++;
+    if (r.status?.emailSent) userStats[user].emailSent++;
+    if (r.status?.verified) userStats[user].verified++;
+    if (r.status?.disburse) {
+      userStats[user].disburse++;
+      userStats[user].disbCount++;
+      userStats[user].disbVol += r.loanAmt || 0;
+    }
+    if (r.status?.untag) userStats[user].untag++;
+    if (r.status?.lostOpp) userStats[user].lostOpp++;
+  });
+  return userStats;
+}
+
+function renderDashboard() {
+  const from = document.getElementById('dashFrom').value;
+  const to = document.getElementById('dashTo').value;
+
+  let filtered = [...loanRecords];
+  if (from) filtered = filtered.filter(r => new Date(r.createdAt) >= new Date(from + 'T00:00:00'));
+  if (to) filtered = filtered.filter(r => new Date(r.createdAt) <= new Date(to + 'T23:59:59.999'));
+
+  const totalApps = filtered.length;
+  const totalVol = filtered.reduce((sum, r) => sum + (r.loanAmt || 0), 0);
+  const disbursedRecs = filtered.filter(r => r.status?.disburse);
+  const disbursedVol = disbursedRecs.reduce((sum, r) => sum + (r.loanAmt || 0), 0);
+  const totalNetPro = filtered.reduce((sum, r) => sum + (r.netPro || 0), 0);
+  const lostApps = filtered.filter(r => r.status?.lostOpp).length;
+  const convRate = totalApps > 0 ? ((disbursedRecs.length / totalApps) * 100).toFixed(1) : 0;
+
+  document.getElementById('dKpiApps').textContent = totalApps;
+  document.getElementById('dKpiVol').textContent = fmtMoney(totalVol);
+  document.getElementById('dKpiDisbVol').textContent = fmtMoney(disbursedVol);
+  document.getElementById('dKpiDisbCount').textContent = `${disbursedRecs.length} Released Loans`;
+  document.getElementById('dKpiNetPro').textContent = fmtMoney(totalNetPro);
+  document.getElementById('dKpiConv').textContent = `${convRate}%`;
+  document.getElementById('dKpiLostCount').textContent = `${lostApps} Lost Opps`;
+
+  const userStats = getOfficerStats(filtered);
+
+  const userRows = Object.entries(userStats).map(([u, s]) => {
+    const uConv = s.apps > 0 ? ((s.disbCount / s.apps) * 100).toFixed(0) : 0;
+    return `
+      <tr>
+        <td><strong>👤 ${u.toUpperCase()}</strong></td>
+        <td><span class="badge-loan badge-new">${s.newCount}</span> (${fmtMoney(s.newVol)})</td>
+        <td><span class="badge-loan badge-reloan">${s.reloanCount}</span> (${fmtMoney(s.reloanVol)})</td>
+        <td><span class="badge-loan badge-mult">${s.reloanMultCount}</span> (${fmtMoney(s.reloanMultVol)})</td>
+        <td><strong>${s.apps}</strong></td>
+        <td><strong>${fmtMoney(s.vol)}</strong></td>
+        <td>${fmtMoney(s.disbVol)}</td>
+        <td><strong style="color:#2E7D32;">${uConv}%</strong></td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('dashUserTableBody').innerHTML = userRows || '<tr><td colspan="8" style="text-align:center;padding:15px;">No records found for period</td></tr>';
+
+  const statusMatrixRows = Object.entries(userStats).map(([u, s]) => `
+    <tr>
+      <td><strong>👤 ${u.toUpperCase()}</strong></td>
+      <td><span class="status-pill pill-compute">${s.compute}</span></td>
+      <td><span class="status-pill pill-process">${s.process}</span></td>
+      <td><span class="status-pill pill-email">${s.emailSent}</span></td>
+      <td><span class="status-pill pill-verified">${s.verified}</span></td>
+      <td><span class="status-pill pill-disburse">${s.disburse}</span></td>
+      <td><span class="status-pill pill-untag">${s.untag}</span></td>
+      <td><span class="status-pill pill-lost">${s.lostOpp}</span></td>
+      <td><strong>${s.apps}</strong></td>
+    </tr>
+  `).join('');
+
+  document.getElementById('dashUserStatusMatrixBody').innerHTML = statusMatrixRows || '<tr><td colspan="9" style="text-align:center;padding:15px;">No process matrix data available</td></tr>';
+
+  const statuses = [
+    { name: 'Computed', key: 'compute', color: '#5E35B1' },
+    { name: 'Processed', key: 'process', color: '#2196F3' },
+    { name: 'Email Sent', key: 'emailSent', color: '#9C27B0' },
+    { name: 'Verified', key: 'verified', color: '#FF9800' },
+    { name: 'Disbursed', key: 'disburse', color: '#4CAF50' },
+    { name: 'Lost Opp', key: 'lostOpp', color: '#E53935' }
+  ];
+
+  const barsHtml = statuses.map(s => {
+    const count = filtered.filter(r => r.status && r.status[s.key]).length;
+    const pct = totalApps > 0 ? ((count / totalApps) * 100).toFixed(0) : 0;
+    return `
+      <div class="bar-group">
+        <div class="bar-lbl"><span>${s.name}</span><span>${count} (${pct}%)</span></div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%; background:${s.color};"></div></div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('dashStatusBars').innerHTML = barsHtml;
+}
+
+function exportUserReport() {
+  exportToExcel();
+}
+
+// ==============================================
+// 💰 BUYOUT & CORE CALCULATOR
+// ==============================================
+function updateBuyoutTotal() {
+  let totalBal = 0, totalDed = 0;
+  document.querySelectorAll('#buyoutBody tr').forEach(row => {
+    totalBal += parseNum(row.querySelector('.balance').value);
+    totalDed += parseNum(row.querySelector('.ded').value);
+  });
+  document.getElementById('totalBuyoutBal').textContent = formatNum(totalBal);
+  document.getElementById('totalBuyoutDed').textContent = formatNum(totalDed);
+  return { totalBal, totalDed };
+}
+
+function addBuyoutRow() {
+  const tbody = document.getElementById('buyoutBody');
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td><input type="text" class="buyout-input" placeholder="Creditor / Loan Name" oninput="autoCompute()"></td>
+    <td><input type="number" class="buyout-input balance" step="0.01" min="0" placeholder="0.00" oninput="autoCompute()"></td>
+    <td><input type="number" class="buyout-input ded" step="0.01" min="0" placeholder="0.00" oninput="autoCompute()"></td>
+    <td><button class="btn-remove" onclick="removeBuyoutRow(this)">✕</button></td>
+  `;
+  tbody.appendChild(row);
+  updateBuyoutTotal();
+  autoCompute();
+}
+
+function removeBuyoutRow(btn) {
+  if (document.getElementById('buyoutBody').rows.length > 1) {
+    btn.closest('tr').remove();
+    updateBuyoutTotal();
+    autoCompute();
+  }
+}
+
+function getAllBuyout() {
+  const items = [];
+  document.querySelectorAll('#buyoutBody tr').forEach(r => {
+    items.push({
+      name: r.querySelector('td:first-child input').value.trim(),
+      balance: parseNum(r.querySelector('.balance').value),
+      deduction: parseNum(r.querySelector('.ded').value)
+    });
+  });
+  const totals = updateBuyoutTotal();
+  return { items, ...totals };
+}
+
+function loadBuyout(data) {
+  document.getElementById('buyoutBody').innerHTML = '';
+  if (!data || !Array.isArray(data.items) || !data.items.length) {
+    addBuyoutRow();
+    return;
+  }
+  data.items.forEach(it => {
+    const r = document.createElement('tr');
+    r.innerHTML = `
+      <td><input class="buyout-input" value="${it.name || ''}" oninput="autoCompute()"></td>
+      <td><input class="buyout-input balance" value="${it.balance || 0}" oninput="autoCompute()"></td>
+      <td><input class="buyout-input ded" value="${it.deduction || 0}" oninput="autoCompute()"></td>
+      <td><button class="btn-remove" onclick="removeBuyoutRow(this)">✕</button></td>
+    `;
+    document.getElementById('buyoutBody').appendChild(r);
+  });
+  updateBuyoutTotal();
+}
+
+function autoCompute() {
+  const loanAmt = parseNum(document.getElementById('loanAmt').value);
+  const term = parseInt(document.getElementById('term').value) || 0;
+  const netpay = parseNum(document.getElementById('netpay').value);
+  const csbDed = parseNum(document.getElementById('csbDed').value);
+  const addBack = parseNum(document.getElementById('addBack').value);
+  const undeductedPli = parseNum(document.getElementById('undeductedPli').value);
+  const csbBal = parseNum(document.getElementById('outBal').value);
+  const buyout = getAllBuyout();
+
+  const total = netpay + csbDed + buyout.totalDed - undeductedPli + addBack;
+  document.getElementById('total').value = total > 0 ? formatNum(total) : '';
+
+  if (!loanAmt || !term) {
+    ['newDed', 'newNthp', 'grossPro', 'netPro'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const warningEl = document.getElementById('netPayWarning');
+    if (warningEl) warningEl.style.display = 'none';
+    window.lastCalc = { loanAmt: 0, term, netpay, csbDed, addBack, undeductedPli, csbBal, buyout, total, amort: 0, actualNet: 0, grossPro: 0, netPro: 0 };
+    return;
+  }
+
+  const amort = getAmortization(loanAmt, term);
+  const actualNet = total - amort;
+  const grossPro = loanAmt * (1 - BANK_CHARGE);
+  const netPro = grossPro - csbBal - buyout.totalBal;
+
+  document.getElementById('newDed').value = formatNum(amort);
+  document.getElementById('newNthp').value = formatNum(actualNet);
+  document.getElementById('grossPro').value = formatNum(grossPro);
+  document.getElementById('netPro').value = formatNum(netPro);
+
+  const warningEl = document.getElementById('netPayWarning');
+  if (actualNet < MIN_NET_PAY && actualNet > 0) {
+    warningEl.textContent = `WARNING: Actual Net Pay (${fmtMoney(actualNet)}) is below ₱5,300 minimum threshold!`;
+    warningEl.style.display = 'block';
+  } else {
+    warningEl.style.display = 'none';
+  }
+
+  window.lastCalc = { loanAmt, term, netpay, csbDed, addBack, undeductedPli, csbBal, buyout, total, amort, actualNet, grossPro, netPro };
+}
+
+function clearResults() {
+  ['total', 'newDed', 'newNthp', 'grossPro', 'netPro'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const warningEl = document.getElementById('netPayWarning');
+  if (warningEl) warningEl.style.display = 'none';
+}
+
+// ==============================================
+// 📋 CRUD & STORAGE
+// ==============================================
+function saveToStorage() {
+  localStorage.setItem('loanRecords', JSON.stringify(loanRecords));
+}
+
+function loadFromStorage() {
+  try {
+    const saved = localStorage.getItem('loanRecords');
+    if (saved) loanRecords = JSON.parse(saved);
+  } catch (e) { loanRecords = []; }
+
+  try {
+    const savedLog = localStorage.getItem('activityLog');
+    if (savedLog) activityLog = JSON.parse(savedLog);
+  } catch (e) { activityLog = []; }
+
+  try {
+    const savedEmails = localStorage.getItem('sentEmailsLog');
+    if (savedEmails) sentEmailsLog = JSON.parse(savedEmails);
+  } catch (e) { sentEmailsLog = []; }
+
+  seedInitialData();
+}
+
+function saveRecord() {
+  if (!document.getElementById('accountName').value.trim()) {
+    showStatus('Enter Account Name first!', false);
+    return;
+  }
+  if (!window.lastCalc || !window.lastCalc.loanAmt) {
+    showStatus('Please fill in loan values first!', false);
+    return;
+  }
+
+  const existingRec = editingId ? loanRecords.find(r => r.id === editingId) : null;
+
+  const record = {
+    id: editingId || Date.now(),
+    accountName: document.getElementById('accountName').value.trim(),
+    school: document.getElementById('custSchool').value.trim(),
+    mobile: document.getElementById('custMobile').value.trim(),
+    loanType: document.getElementById('loanType').value,
+    appNumber: document.getElementById('custNumber').value.trim(),
+    empNumber: document.getElementById('empNumber').value.trim(),
+    division: document.getElementById('division').value.trim(),
+    station: document.getElementById('station').value.trim(),
+    gsisNumber: document.getElementById('custGsisNumber').value.trim(),
+    tinNumber: document.getElementById('custTinNumber').value.trim(),
+    motherMaiden: document.getElementById('custMotherMaiden').value.trim(),
+    email: document.getElementById('custEmail').value.trim(),
+    processedBy: getCurrentLoggedInUser(),
+    ...window.lastCalc,
+    status: {
+      compute: document.getElementById('chkCompute').checked,
+      process: document.getElementById('chkProcess').checked,
+      emailSent: document.getElementById('chkEmailSent').checked,
+      verified: document.getElementById('chkVerified').checked,
+      disburse: document.getElementById('chkDisburse').checked,
+      untag: document.getElementById('chkUntag').checked,
+      lostOpp: document.getElementById('chkLostOpp').checked
+    },
+    createdAt: existingRec ? existingRec.createdAt : new Date().toISOString()
+  };
+
+  if (editingId) {
+    const idx = loanRecords.findIndex(r => r.id === editingId);
+    if (idx > -1) loanRecords[idx] = record;
+    editingId = null;
+    showStatus('RECORD UPDATED!');
+  } else {
+    loanRecords.unshift(record);
+    showStatus('RECORD SAVED!');
+  }
+
+  saveToStorage();
+  addLog(editingId ? 'Updated Record' : 'Saved Record', record.accountName);
+  populateReloanRecordSelector();
+  updateUserFilter();
+  renderRecords();
+  renderDashboard();
+  renderReports();
+  renderReloanReportTable();
+  renderEmailSectionTables();
+  newForm();
+}
+
+function newForm() {
+  document.querySelectorAll('#loanSection input, #loanSection select').forEach(i => {
+    if (!['division', 'term', 'loanType'].includes(i.id)) {
+      if (i.type !== 'button' && i.type !== 'file') i.value = '';
+    }
+  });
+  document.getElementById('division').value = '087';
+  document.getElementById('term').value = '84';
+  document.getElementById('loanType').value = 'RELOAN';
+  document.getElementById('addBack').value = '0';
+  document.getElementById('undeductedPli').value = '0';
+  document.querySelectorAll('input[name="status"]').forEach(cb => cb.checked = false);
+  document.getElementById('buyoutBody').innerHTML = '';
+  addBuyoutRow();
+  editingId = null;
+  window.lastCalc = null;
+  clearResults();
+}
+
+function renderRecords() {
+  const kw = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const filtered = kw ? loanRecords.filter(r =>
+    r.accountName.toLowerCase().includes(kw) ||
+    (r.appNumber || '').toLowerCase().includes(kw) ||
+    (r.school || '').toLowerCase().includes(kw) ||
+    (r.mobile || '').toLowerCase().includes(kw) ||
+    (r.processedBy || '').toLowerCase().includes(kw)
+  ) : loanRecords;
+
+  document.getElementById('recordCount').textContent = loanRecords.length;
+  document.getElementById('recordsList').innerHTML = filtered.map(r => {
+    let st = '📋 Untagged';
+    if (r.status?.disburse) st = '💰 Disbursed';
+    else if (r.status?.verified) st = '✅ Verified';
+    else if (r.status?.emailSent) st = '📧 Email Sent';
+    else if (r.status?.process) st = '⚙️ Processed';
+    else if (r.status?.compute) st = '🧮 Computed';
+    else if (r.status?.lostOpp) st = '❌ Lost Opp';
+
+    return `<tr>
+      <td>${st}</td>
+      <td><strong>${r.accountName}</strong></td>
+      <td>${r.school || '—'}</td>
+      <td>${r.mobile || '—'}</td>
+      <td>${r.processedBy || '—'}</td>
+      <td>${fmtMoney(r.loanAmt)}</td>
+      <td>${fmtMoney(r.netPro)}</td>
+      <td>
+        <button class="btn btn-edit" style="padding:3px 8px; font-size:11px;" onclick="editRecord(${r.id})">✏️ Edit</button>
+        <button class="btn btn-del" style="padding:3px 8px; font-size:11px;" onclick="deleteRecord(${r.id})">🗑️ Delete</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" style="text-align:center;padding:20px;">No saved records yet</td></tr>';
+}
+
+function editRecord(id) {
+  const rec = loanRecords.find(r => r.id === id);
+  if (!rec) return;
+
+  document.getElementById('accountName').value = rec.accountName || '';
+  document.getElementById('custSchool').value = rec.school || '';
+  document.getElementById('custMobile').value = rec.mobile || '';
+  document.getElementById('loanType').value = rec.loanType || 'RELOAN';
+  document.getElementById('custNumber').value = rec.appNumber || '';
+  document.getElementById('empNumber').value = rec.empNumber || '';
+  document.getElementById('division').value = rec.division || '087';
+  document.getElementById('station').value = rec.station || '';
+  document.getElementById('custGsisNumber').value = rec.gsisNumber || '';
+  document.getElementById('custTinNumber').value = rec.tinNumber || '';
+  document.getElementById('custEmail').value = rec.email || '';
+  document.getElementById('custMotherMaiden').value = rec.motherMaiden || '';
+  document.getElementById('loanAmt').value = rec.loanAmt || '';
+  document.getElementById('term').value = rec.term || 84;
+  document.getElementById('netpay').value = rec.netpay || '';
+  document.getElementById('csbDed').value = rec.csbDed || '';
+  document.getElementById('addBack').value = rec.addBack || 0;
+  document.getElementById('undeductedPli').value = rec.undeductedPli || 0;
+  document.getElementById('outBal').value = rec.csbBal || '';
+
+  document.getElementById('chkCompute').checked = !!rec.status?.compute;
+  document.getElementById('chkProcess').checked = !!rec.status?.process;
+  document.getElementById('chkEmailSent').checked = !!rec.status?.emailSent;
+  document.getElementById('chkVerified').checked = !!rec.status?.verified;
+  document.getElementById('chkDisburse').checked = !!rec.status?.disburse;
+  document.getElementById('chkUntag').checked = !!rec.status?.untag;
+  document.getElementById('chkLostOpp').checked = !!rec.status?.lostOpp;
+
+  loadBuyout(rec.buyout);
+  editingId = id;
+  autoCompute();
+  showSection('loan');
+  showStatus('Record loaded — Edit and click Save!');
+}
+
+function deleteRecord(id) {
+  const rec = loanRecords.find(r => r.id === id);
+  if (confirm(`Delete record "${rec?.accountName}"?`)) {
+    loanRecords = loanRecords.filter(r => r.id !== id);
+    saveToStorage();
+    addLog('Deleted Record', rec?.accountName);
+    populateReloanRecordSelector();
+    renderRecords();
+    renderDashboard();
+    renderReports();
+    renderReloanReportTable();
+    renderEmailSectionTables();
+    showStatus('Record deleted');
+  }
+}
+
+// ==============================================
+// 📊 REPORTS & EXPORT / IMPORT EXCEL
+// ==============================================
+function updateUserFilter() {
+  const users = [...new Set(loanRecords.map(r => r.processedBy).filter(Boolean))].sort();
+  document.getElementById('filterUser').innerHTML = '<option value="">All Officers</option>' +
+    users.map(u => `<option value="${u}">${u}</option>`).join('');
+}
+
+function renderReports() {
+  const from = document.getElementById('filterFrom').value;
+  const to = document.getElementById('filterTo').value;
+  const user = document.getElementById('filterUser').value;
+
+  let data = [...loanRecords];
+  if (user) data = data.filter(r => r.processedBy === user);
+  if (from) data = data.filter(r => new Date(r.createdAt) >= new Date(from + 'T00:00:00'));
+  if (to) data = data.filter(r => new Date(r.createdAt) <= new Date(to + 'T23:59:59.999'));
+
+  const userStats = getOfficerStats(data);
+  const summaryRows = Object.entries(userStats).map(([u, s]) => `
+    <tr>
+      <td><strong>👤 ${u.toUpperCase()}</strong></td>
+      <td>${s.newCount}</td>
+      <td>${fmtMoney(s.newVol)}</td>
+      <td>${s.reloanCount}</td>
+      <td>${fmtMoney(s.reloanVol)}</td>
+      <td>${s.reloanMultCount}</td>
+      <td>${fmtMoney(s.reloanMultVol)}</td>
+      <td><strong>${fmtMoney(s.vol)}</strong></td>
+    </tr>
+  `).join('');
+
+  document.getElementById('rptLoanTypeSummaryBody').innerHTML = summaryRows || '<tr><td colspan="8" style="text-align:center;padding:15px;">No officer summary available</td></tr>';
+
+  const predictions = getSavedRecordsReloanPredictions();
+  let filteredPredictions = [...predictions];
+  if (user) filteredPredictions = filteredPredictions.filter(e => e.evalBy === user);
+  if (from) filteredPredictions = filteredPredictions.filter(e => new Date(e.createdAt) >= new Date(from + 'T00:00:00'));
+  if (to) filteredPredictions = filteredPredictions.filter(e => new Date(e.createdAt) <= new Date(to + 'T23:59:59.999'));
+
+  document.getElementById('rptReloanEvalsBody').innerHTML = filteredPredictions.map(e => `
+    <tr>
+      <td>${e.origDate}</td>
+      <td><strong>${e.name}</strong></td>
+      <td>${e.monthsPaid}/${e.origTerm}m</td>
+      <td>${fmtMoney(e.nthp)}</td>
+      <td>${fmtMoney(e.targetAmount)} (${e.targetTerm}m)</td>
+      <td>${fmtMoney(e.projectedNthp)}</td>
+      <td>${fmtMoney(e.maxCapacity)}</td>
+      <td>${e.status === 'QUALIFIED' ? '<span class="badge-loan badge-reloan">✅ QUALIFIED AGAIN</span>' : '<span class="status-pill pill-lost">⏳ ' + e.failReason + '</span>'}</td>
+      <td>${e.evalBy || '—'}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="9" style="text-align:center;padding:15px;">No reloan qualification records match the filter</td></tr>';
+
+  document.getElementById('rptLoanTypeBody').innerHTML = data.map(r => `
+    <tr>
+      <td>${new Date(r.createdAt).toLocaleDateString('en-PH')}</td>
+      <td><strong>${r.accountName}</strong></td>
+      <td>${r.school || '—'}</td>
+      <td>${r.mobile || '—'}</td>
+      <td>${r.loanType || '—'}</td>
+      <td>${r.processedBy || '—'}</td>
+      <td>${fmtMoney(r.loanAmt)}</td>
+      <td>${fmtMoney(r.netPro)}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="8" style="text-align:center;padding:20px;">No records match filter</td></tr>';
+}
+
+function exportToExcel() {
+  if (!loanRecords.length) { showStatus('No data to export!', false); return; }
+  const XLSX = window.XLSX;
+  
+  const userStats = getOfficerStats(loanRecords);
+  const summaryRows = Object.entries(userStats).map(([u, s]) => [
+    u, s.newCount, s.newVol, s.reloanCount, s.reloanVol, s.reloanMultCount, s.reloanMultVol, s.compute, s.process, s.emailSent, s.verified, s.disburse, s.untag, s.lostOpp, s.vol
+  ]);
+  const wsSummary = XLSX.utils.aoa_to_sheet([
+    ['Processing Officer', 'New Loan Count', 'New Loan Vol', 'Reloan Count', 'Reloan Vol', 'Reloan Multiple Count', 'Reloan Multiple Vol', 'Compute', 'Process', 'Email Sent', 'Verified', 'Disbursed', 'Untagged', 'Lost Opp', 'Total Loan Vol'],
+    ...summaryRows
+  ]);
+
+  const detailRows = loanRecords.map(r => [
+    new Date(r.createdAt).toLocaleString('en-PH'),
+    r.accountName, r.school || '', r.mobile || '', r.appNumber, r.empNumber, r.loanType,
+    r.loanAmt, r.undeductedPli || 0, r.netpay, r.amort, r.netPro, r.processedBy
+  ]);
+  const wsDetail = XLSX.utils.aoa_to_sheet([
+    ['Date', 'Account Name', 'School / Office', 'Cellphone Number', 'App#', 'Emp#', 'Loan Type', 'Loan Amount', 'Undeducted PLI', 'Net Pay', 'Amortization', 'Net Proceeds', 'Officer'],
+    ...detailRows
+  ]);
+
+  const predictions = getSavedRecordsReloanPredictions();
+  const reloanEvalRows = predictions.map(e => [
+    e.origDate, e.name, e.monthsPaid, e.origTerm, e.currAmort, e.nthp,
+    e.targetAmount, e.targetTerm, e.projectedNthp, e.maxCapacity, e.status, e.failReason || 'Passed', e.evalBy
+  ]);
+  const wsReloan = XLSX.utils.aoa_to_sheet([
+    ['Origination Date', 'Client Name', 'Paid Months Elapsed', 'Original Term', 'Current Amort', 'Base NTHP', 'Predicted Reloan', 'Target Term', 'Projected Net Pay', 'Max Capacity', 'Prediction Status', 'Remarks/Reason', 'Officer'],
+    ...reloanEvalRows
+  ]);
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Officer Summary');
+  XLSX.utils.book_append_sheet(wb, wsDetail, 'Detailed Transactions');
+  XLSX.utils.book_append_sheet(wb, wsReloan, 'Reloan Prediction Report');
+  XLSX.writeFile(wb, `FSA_Officer_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+  addLog('Exported Excel', `${loanRecords.length} records exported with Reloan Evaluation Reports`);
+}
+
+function importFromExcel(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const XLSX = window.XLSX;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const wb = XLSX.read(ev.target.result, { type: 'array' });
+      const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+      if (confirm(`Import ${json.length} records from Excel?`)) {
+        const imported = json.map((x, i) => ({
+          id: Date.now() + i,
+          accountName: x['Account Name'] || x['Name'] || 'Imported Borrower',
+          school: x['School / Office'] || x['School'] || '',
+          mobile: x['Cellphone Number'] || x['Mobile'] || '',
+          appNumber: x['App#'] || x['App Number'] || '',
+          empNumber: x['Emp#'] || x['Employee Number'] || '',
+          loanType: x['Loan Type'] || 'RELOAN',
+          loanAmt: parseFloat(x['Loan Amount'] || x['LoanAmt'] || 0),
+          netpay: parseFloat(x['Net Pay'] || 0),
+          amort: parseFloat(x['Amortization'] || 0),
+          netPro: parseFloat(x['Net Proceeds'] || 0),
+          processedBy: x['Officer'] || x['Processed By'] || getCurrentLoggedInUser(),
+          createdAt: new Date().toISOString()
+        }));
+        loanRecords.push(...imported);
+        saveToStorage();
+        populateReloanRecordSelector();
+        updateUserFilter();
+        renderRecords();
+        renderDashboard();
+        renderReports();
+        renderReloanReportTable();
+        renderEmailSectionTables();
+        addLog('Imported Excel', `${imported.length} records imported`);
+        showStatus(`${imported.length} records imported successfully!`);
+      }
+    } catch (err) {
+      showStatus('Error importing Excel file!', false);
+    }
+  };
+  r.readAsArrayBuffer(f);
+  e.target.value = '';
+}
+
+// ==============================================
+// 💾 DATABASE EXPORT / IMPORT (JSON)
+// ==============================================
+function exportJSONDatabase() {
+  const dbState = {
+    app: "FSALoanRanger",
+    version: "2.1.0",
+    exportDate: new Date().toISOString(),
+    users: getUsers(),
+    records: loanRecords,
+    emails: sentEmailsLog,
+    logs: activityLog
+  };
+  
+  const blob = new Blob([JSON.stringify(dbState, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `FSA_Database_Backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  addLog('Exported JSON Database', 'System backup generated');
+  showStatus('JSON Database downloaded!');
+}
+
+function importJSONDatabase(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.app !== "FSALoanRanger") { showStatus('Invalid JSON backup file!', false); return; }
+      
+      if (confirm(`Overwrite system data with backup from ${new Date(data.exportDate).toLocaleString()}?`)) {
+        if (data.users) saveUsers(data.users);
+        if (data.records) { loanRecords = data.records; saveToStorage(); }
+        if (data.emails) { sentEmailsLog = data.emails; localStorage.setItem('sentEmailsLog', JSON.stringify(sentEmailsLog)); }
+        if (data.logs) { activityLog = data.logs; localStorage.setItem('activityLog', JSON.stringify(activityLog)); }
+        
+        initializeSystem();
+        addLog('Imported JSON Database', 'System restored from file');
+        showStatus('Database restored successfully!');
+      }
+    } catch (err) {
+      showStatus('Error reading JSON file!', false);
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ==============================================
+// 📝 LOGS & NAVIGATION
+// ==============================================
+function addLog(action, details = '') {
+  activityLog.unshift({
+    id: Date.now(),
+    datetime: new Date().toLocaleString(),
+    user: getCurrentLoggedInUser() || 'System',
+    action,
+    details
+  });
+  localStorage.setItem('activityLog', JSON.stringify(activityLog));
+  renderActivityLog();
+}
+
+function renderActivityLog() {
+  const q = (document.getElementById('logSearch')?.value || '').toLowerCase();
+  const filtered = activityLog.filter(l =>
+    !q || l.datetime.toLowerCase().includes(q) ||
+    l.user.toLowerCase().includes(q) ||
+    l.action.toLowerCase().includes(q) ||
+    l.details.toLowerCase().includes(q)
+  );
+  document.getElementById('activityLogList').innerHTML = filtered.map(l => `
+    <tr>
+      <td>${l.datetime}</td>
+      <td><strong>${l.user}</strong></td>
+      <td>${l.action}</td>
+      <td>${l.details || '—'}</td>
+    </tr>`
+  ).join('') || '<tr><td colspan="4" style="text-align:center;padding:15px;">No activity logged</td></tr>';
+}
+
+function clearActivityLog() {
+  if (confirm('Clear all logs?')) {
+    activityLog = [];
+    localStorage.setItem('activityLog', JSON.stringify(activityLog));
+    renderActivityLog();
+  }
+}
+
+function showSection(section) {
+  document.querySelectorAll('.menu').forEach(m => m.classList.remove('active'));
+  
+  const secMap = {
+    'dashboard': 'dashboardSection',
+    'loan': 'loanSection',
+    'email': 'emailSection',
+    'reloanQualifier': 'reloanQualifierSection',
+    'records': 'recordsSection',
+    'reports': 'reportsSection',
+    'activityLog': 'activityLogSection',
+    'database': 'databaseSection'
+  };
+
+  const btnMap = {
+    'dashboard': 'menuDash',
+    'loan': 'menuLoan',
+    'email': 'menuEmail',
+    'reloanQualifier': 'menuReloan',
+    'records': 'menuRecords',
+    'reports': 'menuReports',
+    'activityLog': 'menuLog',
+    'database': 'menuDb'
+  };
+
+  Object.values(secMap).forEach(id => { document.getElementById(id).style.display = 'none'; });
+  
+  document.getElementById(secMap[section]).style.display = 'block';
+  document.getElementById(btnMap[section]).classList.add('active');
+
+  if (section === 'dashboard') renderDashboard();
+  if (section === 'email') renderEmailSectionTables();
+  if (section === 'reloanQualifier') { populateReloanRecordSelector(); renderReloanReportTable(); }
+  if (section === 'records') renderRecords();
+  if (section === 'reports') { updateUserFilter(); renderReports(); }
+  if (section === 'activityLog') renderActivityLog();
+}
+
+function openPrintPreview() {
+  if (!window.lastCalc || !window.lastCalc.loanAmt) { showStatus('Calculate loan first!', false); return; }
+
+  document.getElementById('p_name').textContent = document.getElementById('accountName').value || '—';
+  document.getElementById('p_empNo').textContent = document.getElementById('empNumber').value || '—';
+  document.getElementById('p_school').textContent = document.getElementById('custSchool').value || '—';
+  document.getElementById('p_mobile').textContent = document.getElementById('custMobile').value || '—';
+  document.getElementById('p_date').textContent = new Date().toLocaleDateString('en-PH');
+  document.getElementById('p_loanAmt').textContent = formatNum(window.lastCalc.loanAmt);
+  document.getElementById('p_netpay').textContent = formatNum(window.lastCalc.netpay);
+  document.getElementById('p_undeducted').textContent = formatNum(window.lastCalc.undeductedPli);
+  document.getElementById('p_oldDed').textContent = formatNum(window.lastCalc.csbDed);
+  document.getElementById('p_buyout').textContent = formatNum(window.lastCalc.buyout.totalDed);
+  document.getElementById('p_addBack').textContent = formatNum(window.lastCalc.addBack);
+  document.getElementById('p_total').textContent = formatNum(window.lastCalc.total);
+  document.getElementById('p_newDed').textContent = formatNum(window.lastCalc.amort);
+  document.getElementById('p_actualNet').textContent = formatNum(window.lastCalc.actualNet);
+  document.getElementById('p_division').textContent = document.getElementById('division').value || '—';
+  document.getElementById('p_station').textContent = document.getElementById('station').value || '—';
+  document.getElementById('p_term').textContent = document.getElementById('term').value + ' Months';
+  document.getElementById('p_processedBy').textContent = getCurrentLoggedInUser().toUpperCase();
+
+  document.getElementById('printOverlay').classList.add('show');
+}
+
+function closePrintPreview() {
+  document.getElementById('printOverlay').classList.remove('show');
+}
+
+function initializeSystem() {
+  loadFromStorage();
+  populateReloanRecordSelector();
+  updateUserFilter();
+  renderReloanReportTable();
+  renderEmailSectionTables();
+  showSection('dashboard');
+  showStatus('SYSTEM READY — Welcome ' + getCurrentLoggedInUser().toUpperCase());
+}
+
+document.addEventListener('keypress', function(e) {
+  if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') {
+    doLogin();
+  }
+});
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#accountName') && !e.target.closest('#accountSearchOverlay')) {
+    document.getElementById('accountSearchOverlay').style.display = 'none';
+  }
+});
+
+window.onload = checkLoginStatus;
+</script>
+</body>
+</html>
